@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rating - Repair The Gear</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <style>
+        .rating-container {
+            flex: 1;
+            padding: var(--spacing-l);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .rating-card {
+            background: var(--surface);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-xl);
+            box-shadow: var(--shadow);
+            width: 100%;
+            text-align: center;
+        }
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 40px;
+            background: var(--primary);
+            color: #0B1120;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+            margin: 0 auto var(--spacing-m) auto;
+        }
+        .stars {
+            display: flex;
+            justify-content: center;
+            margin: var(--spacing-l) 0;
+            gap: 8px;
+        }
+        .star {
+            font-size: 40px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .star.selected {
+            color: #FFD700;
+        }
+        .feedback-input {
+            width: 100%;
+            background: var(--background);
+            border: 1px solid var(--border);
+            border-radius: var(--border-radius);
+            color: var(--text);
+            padding: var(--spacing-s);
+            min-height: 80px;
+            resize: none;
+            font-family: inherit;
+            margin-bottom: var(--spacing-l);
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-wrapper">
+        <div class="rating-container fade-in">
+            <h2 class="mb-xl text-center" style="color: var(--primary);">Payment Successful!</h2>
+            
+            <div class="rating-card">
+                <div class="avatar" id="avatarColor">
+                    <ion-icon name="person" id="avatarIcon"></ion-icon>
+                </div>
+                <h3 id="providerName">Provider Name</h3>
+                <p class="text-secondary mb-m">How was your service?</p>
+                
+                <div class="stars" id="starContainer">
+                    <ion-icon name="star" class="star" data-val="1"></ion-icon>
+                    <ion-icon name="star" class="star" data-val="2"></ion-icon>
+                    <ion-icon name="star" class="star" data-val="3"></ion-icon>
+                    <ion-icon name="star" class="star" data-val="4"></ion-icon>
+                    <ion-icon name="star" class="star" data-val="5"></ion-icon>
+                </div>
+
+                <textarea class="feedback-input" placeholder="Leave a comment (optional)"></textarea>
+
+                <button class="btn btn-primary" onclick="submitRating()">Submit Rating</button>
+            </div>
+            
+            <button class="btn btn-outline mt-m" onclick="skipRating()" style="border: none; color: var(--text-secondary);">Skip for now</button>
+        </div>
+    </div>
+
+    <script>
+        // Load provider data
+        const dataStr = localStorage.getItem('trackingData');
+        if (dataStr) {
+            const data = JSON.parse(dataStr);
+            document.getElementById('providerName').textContent = data.name || 'Provider';
+            if (data.type === 'tow') {
+                document.getElementById('avatarColor').style.backgroundColor = 'var(--warning)';
+                document.getElementById('avatarIcon').name = 'business';
+            }
+        }
+
+        // Star rating logic
+        let selectedRating = 0;
+        const stars = document.querySelectorAll('.star');
+        
+        stars.forEach(star => {
+            star.addEventListener('click', (e) => {
+                const val = parseInt(e.target.getAttribute('data-val'));
+                selectedRating = val;
+                
+                stars.forEach(s => {
+                    if (parseInt(s.getAttribute('data-val')) <= val) {
+                        s.classList.add('selected');
+                    } else {
+                        s.classList.remove('selected');
+                    }
+                });
+            });
+        });
+
+        function submitRating() {
+            if(selectedRating === 0) {
+                alert("Please select a star rating first.");
+                return;
+            }
+            alert('Thank you for your feedback!');
+            // Clear tracking data
+            localStorage.removeItem('trackingData');
+            window.location.href = 'home.html';
+        }
+
+        function skipRating() {
+            localStorage.removeItem('trackingData');
+            window.location.href = 'home.html';
+        }
+    </script>
+</body>
+</html>

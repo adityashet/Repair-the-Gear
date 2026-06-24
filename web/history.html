@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>History - Repair The Gear</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <style>
+        .history-card {
+            background: var(--surface);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-m);
+            margin-bottom: var(--spacing-m);
+            border: 1px solid var(--border);
+        }
+        .h-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: var(--spacing-s);
+        }
+        .h-type {
+            display: flex; align-items: center; font-weight: 600;
+        }
+        .h-type ion-icon { margin-right: 8px; }
+        .h-body {
+            display: flex; justify-content: space-between;
+            margin-bottom: var(--spacing-m);
+        }
+        .h-footer {
+            display: flex; justify-content: space-between; align-items: center;
+            border-top: 1px solid var(--border);
+            padding-top: var(--spacing-m);
+        }
+        .status-badge {
+            background: #E8F5E9; color: var(--success);
+            padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-wrapper">
+    <div class="container fade-in" style="padding-bottom: 120px;" id="historyContainer">
+        <h2>Service History</h2>
+        <!-- History cards will be injected here by JS -->
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="home.html" class="nav-item">
+            <ion-icon name="home-outline"></ion-icon>
+            Home
+        </a>
+        <a href="history.html" class="nav-item active">
+            <ion-icon name="time"></ion-icon>
+            History
+        </a>
+        <a href="profile.html" class="nav-item">
+            <ion-icon name="person-outline"></ion-icon>
+            Profile
+        </a>
+    </nav>
+    <script>
+        const container = document.getElementById('historyContainer');
+        const historyStr = localStorage.getItem('history');
+        let historyArr = [];
+        
+        if (historyStr) {
+            historyArr = JSON.parse(historyStr);
+        } else {
+            // Mock data fallback if nothing in localStorage
+            historyArr = [
+                { id: 1, date: '12 Oct 2023', provider: 'Rahul Kumar', type: 'mechanic', amount: 500, rating: 5, status: 'Completed' },
+                { id: 2, date: '05 Sep 2023', provider: 'City Towing Services', type: 'tow', amount: 500, rating: 4, status: 'Completed' }
+            ];
+            localStorage.setItem('history', JSON.stringify(historyArr));
+        }
+
+        if (historyArr.length === 0) {
+            container.innerHTML += '<p class="text-secondary" style="text-align:center; margin-top:40px;">No history found.</p>';
+        } else {
+            historyArr.forEach(item => {
+                const isTow = item.type === 'tow';
+                const iconName = isTow ? 'car' : 'build';
+                const iconColor = isTow ? 'var(--warning)' : 'var(--secondary)';
+                
+                const card = document.createElement('div');
+                card.className = 'history-card';
+                card.innerHTML = `
+                    <div class="h-header">
+                        <div class="h-type" style="color: ${iconColor}; text-transform: capitalize;">
+                            <ion-icon name="${iconName}"></ion-icon> ${item.type}
+                        </div>
+                        <div class="text-secondary" style="font-size: 14px;">${item.date}</div>
+                    </div>
+                    <div class="h-body">
+                        <div>
+                            <div>${item.provider}</div>
+                            <div style="font-size: 12px; color: var(--primary); margin-top: 4px; display: flex; align-items: center;">
+                                <ion-icon name="star" style="margin-right: 4px;"></ion-icon> ${item.rating || 5}
+                            </div>
+                        </div>
+                        <div style="font-weight: 600; font-size: 18px;">₹${item.amount}</div>
+                    </div>
+                    <div class="h-footer">
+                        <div class="status-badge">${item.status}</div>
+                        <a href="#" style="color: var(--secondary); font-weight: 600; text-decoration: none; font-size: 14px;">Receipt</a>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+    </script>
+    </div>
+</body>
+</html>

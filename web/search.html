@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Search - Repair The Gear</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <style>
+        .loading-view, .found-view {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        .found-view { display: none; }
+        
+        .loader-ring {
+            border: 4px solid var(--surface);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin-bottom: var(--spacing-l);
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .profile-card {
+            background: var(--surface);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-l);
+            box-shadow: var(--shadow);
+            margin-bottom: var(--spacing-xl);
+        }
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: var(--spacing-m);
+        }
+        .avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            background: var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 30px;
+            margin-right: var(--spacing-m);
+        }
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            padding: var(--spacing-m) 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            margin-bottom: var(--spacing-m);
+        }
+        .stat-item { text-align: center; }
+        .stat-val { font-size: 18px; font-weight: 600; margin-top: 4px; }
+        .stat-label { font-size: 14px; color: var(--text-secondary); }
+        .fixed-bottom {
+            position: fixed;
+            bottom: var(--spacing-l);
+            left: var(--spacing-m);
+            right: var(--spacing-m);
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-wrapper">
+    <div class="container fade-in">
+        <!-- Searching State -->
+        <div id="loadingView" class="loading-view centered">
+            <div class="loader-ring" id="loaderColor"></div>
+            <h2 id="loadingText">Searching...</h2>
+            <button class="btn btn-outline mt-xl" onclick="history.back()">Cancel</button>
+        </div>
+
+    <script>
+        // Get URL params to determine if mechanic or tow
+        const urlParams = new URLSearchParams(window.location.search);
+        const type = urlParams.get('type') || 'mechanic';
+        
+        const isMechanic = type === 'mechanic';
+        
+        // Setup UI based on type
+        document.getElementById('loadingText').textContent = isMechanic ? 'Searching nearby mechanics...' : 'Locating nearest tow truck...';
+        if (!isMechanic) {
+            document.getElementById('loaderColor').style.borderTopColor = 'var(--warning)';
+        }
+
+        // Simulate network delay
+        setTimeout(() => {
+            // Pass data to tracking via localStorage
+            localStorage.setItem('trackingData', JSON.stringify({
+                name: isMechanic ? 'Rahul Kumar' : 'City Towing Services',
+                eta: isMechanic ? '8 mins' : '15 mins',
+                dist: isMechanic ? '3.2 km' : '5.4 km',
+                type: type
+            }));
+
+            // Redirect directly to live tracking
+            window.location.href = 'tracking.html';
+        }, 3000);
+    </script>
+    </div>
+</body>
+</html>

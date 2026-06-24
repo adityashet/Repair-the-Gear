@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Profile - Repair The Gear</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <style>
+        .page-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            padding: var(--spacing-m) 0;
+            color: var(--text);
+        }
+        .main-card {
+            background: var(--surface);
+            border-radius: var(--border-radius-lg);
+            margin: 0 var(--spacing-m) var(--spacing-m) var(--spacing-m);
+            overflow: hidden;
+        }
+        .profile-row {
+            display: flex;
+            align-items: center;
+            padding: var(--spacing-m);
+            text-decoration: none;
+            color: var(--text);
+            border-bottom: 1px solid var(--border);
+        }
+        .profile-row:last-child {
+            border-bottom: none;
+        }
+        .p-avatar {
+            width: 60px; height: 60px; border-radius: 30px; background: #94A3B8;
+            color: #0B1120; font-size: 32px;
+            display: flex; justify-content: center; align-items: center;
+            margin-right: var(--spacing-m);
+        }
+        .p-info {
+            flex: 1;
+        }
+        .p-name {
+            font-size: 18px; font-weight: 500; margin-bottom: 4px;
+        }
+        .p-phone {
+            font-size: 14px; color: var(--primary);
+        }
+        .chevron {
+            color: var(--text-secondary);
+            font-size: 20px;
+        }
+        .menu-item {
+            display: flex; align-items: center; padding: 16px var(--spacing-m);
+            text-decoration: none; color: var(--text);
+            border-bottom: 1px solid var(--border);
+        }
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+        .menu-item ion-icon:first-child {
+            font-size: 24px; color: var(--text-secondary); margin-right: var(--spacing-m);
+        }
+        .menu-item span {
+            flex: 1; font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-wrapper">
+    <div class="fade-in" style="flex: 1; display: flex; flex-direction: column; padding-bottom: 70px; overflow-y: auto;">
+        
+        <div class="page-title">Profile</div>
+
+        <!-- Top User Info Card -->
+        <div class="main-card">
+            <a href="account_details.html" class="profile-row">
+                <div class="p-avatar"><ion-icon name="person"></ion-icon></div>
+                <div class="p-info">
+                    <div class="p-name" id="userName">User</div>
+                    <div class="p-phone" id="userPhone">Phone</div>
+                </div>
+                <ion-icon class="chevron" name="chevron-forward"></ion-icon>
+            </a>
+            <div class="profile-row">
+                <ion-icon name="star" style="color: var(--primary); margin-right: 8px; font-size: 20px;"></ion-icon>
+                <span style="flex: 1; font-size: 16px;">4.64 My Rating</span>
+                <ion-icon class="chevron" name="chevron-forward"></ion-icon>
+            </div>
+        </div>
+
+        <!-- Settings Options Card -->
+        <div class="main-card">
+            <a href="help.html" class="menu-item">
+                <ion-icon name="help-circle-outline"></ion-icon>
+                <span>Help</span>
+                <ion-icon class="chevron" name="chevron-forward"></ion-icon>
+            </a>
+            <a href="#" class="menu-item">
+                <ion-icon name="shield-checkmark-outline"></ion-icon>
+                <span>Safety</span>
+                <ion-icon class="chevron" name="chevron-forward"></ion-icon>
+            </a>
+            <a href="about.html" class="menu-item">
+                <ion-icon name="information-circle-outline"></ion-icon>
+                <span>About</span>
+                <ion-icon class="chevron" name="chevron-forward"></ion-icon>
+            </a>
+        </div>
+
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="home.html" class="nav-item">
+            <ion-icon name="home-outline"></ion-icon>
+            Home
+        </a>
+        <a href="history.html" class="nav-item">
+            <ion-icon name="time-outline"></ion-icon>
+            History
+        </a>
+        <a href="profile.html" class="nav-item active">
+            <ion-icon name="person"></ion-icon>
+            Profile
+        </a>
+    </nav>
+
+    <script>
+        // Load user data
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+            const user = JSON.parse(userStr);
+            document.getElementById('userName').textContent = user.name || 'User';
+            document.getElementById('userPhone').textContent = user.phone;
+        }
+    </script>
+    </div>
+</body>
+</html>

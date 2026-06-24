@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login - Repair The Gear</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <style>
+        .login-header {
+            margin-top: 10vh;
+            margin-bottom: var(--spacing-xxl);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .login-logo {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .login-logo-img {
+            height: 120px;
+            margin-bottom: var(--spacing-m);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="mobile-wrapper">
+        <div class="container fade-in">
+            <div class="login-header">
+                <img src="img/logo.png" alt="Repair The Gear Logo" class="login-logo-img"
+                    onerror="this.src='https://via.placeholder.com/120?text=Logo'">
+                <div class="login-logo">Repair The Gear</div>
+            </div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="input-group">
+                    <label for="name">Name</label>
+                    <div class="input-with-icon">
+                        <ion-icon name="person-outline"></ion-icon>
+                        <input type="text" id="name" placeholder="Enter your full name" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="phone">Phone Number</label>
+                    <div class="input-with-icon">
+                        <ion-icon name="call-outline"></ion-icon>
+                        <input type="tel" id="phone" placeholder="Enter your phone number" required pattern="[0-9]{10}">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-m">Continue</button>
+            </form>
+        </div>
+
+        <script>
+            function handleLogin(e) {
+                e.preventDefault();
+                const name = document.getElementById('name').value;
+                const phone = document.getElementById('phone').value;
+
+                if (phone.length >= 10) {
+                    // Mock saving user
+                    localStorage.setItem('user', JSON.stringify({ name, phone }));
+                    window.location.href = 'home.html';
+                }
+            }
+        </script>
+    </div>
+</body>
+
+</html>

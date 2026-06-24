@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Review - Repair The Gear</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <style>
+        .header-bar {
+            display: flex; align-items: center; padding: var(--spacing-m);
+            font-size: 18px; font-weight: 600; border-bottom: 1px solid var(--border);
+            color: var(--text);
+            background: var(--surface);
+        }
+        .review-card {
+            background: var(--surface);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-xl);
+            margin: var(--spacing-m);
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+        .provider-avatar {
+            width: 80px; height: 80px; border-radius: 40px; background: var(--primary);
+            color: #0B1120; font-size: 40px;
+            display: flex; justify-content: center; align-items: center;
+            margin: 0 auto var(--spacing-m);
+        }
+        .rating-stars {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: var(--spacing-xl) 0;
+            font-size: 40px;
+            color: #334155;
+            cursor: pointer;
+        }
+        .rating-stars ion-icon.active {
+            color: var(--primary);
+        }
+        .feedback-input {
+            width: 100%;
+            background: var(--background);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: var(--spacing-m);
+            border-radius: var(--border-radius);
+            margin-bottom: var(--spacing-m);
+            font-family: inherit;
+            resize: none;
+            box-sizing: border-box;
+        }
+        .feedback-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-wrapper">
+        <div class="fade-in" style="flex: 1; display: flex; flex-direction: column;">
+            <div class="header-bar">Rate Provider</div>
+            
+            <div class="review-card">
+                <div class="provider-avatar" id="avatarBg">
+                    <ion-icon name="person" id="avatarIcon"></ion-icon>
+                </div>
+                <h2 id="providerName" style="margin-top: 0; margin-bottom: 4px;">Service Provider</h2>
+                <p class="text-secondary" style="margin-top: 0;">How was your experience?</p>
+
+                <div class="rating-stars" id="starContainer">
+                    <ion-icon name="star" data-val="1"></ion-icon>
+                    <ion-icon name="star" data-val="2"></ion-icon>
+                    <ion-icon name="star" data-val="3"></ion-icon>
+                    <ion-icon name="star" data-val="4"></ion-icon>
+                    <ion-icon name="star" data-val="5"></ion-icon>
+                </div>
+                
+                <textarea class="feedback-input" rows="3" placeholder="Leave a compliment (optional)"></textarea>
+            </div>
+
+            <div style="padding: var(--spacing-m); margin-top: auto; margin-bottom: var(--spacing-l);">
+                <button class="btn btn-primary" onclick="submitReview()" style="width: 100%;">Submit Review</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        let selectedRating = 5;
+        const dataStr = localStorage.getItem('trackingData');
+        let providerName = "Mechanic";
+        let providerType = "mechanic";
+
+        if (dataStr) {
+            const data = JSON.parse(dataStr);
+            providerName = data.name;
+            providerType = data.type;
+            document.getElementById('providerName').textContent = providerName;
+            
+            if(data.type === 'tow') {
+                document.getElementById('avatarIcon').name = 'business';
+                document.getElementById('avatarBg').style.backgroundColor = 'var(--warning)';
+            }
+        }
+
+        const stars = document.querySelectorAll('.rating-stars ion-icon');
+        
+        function updateStars(val) {
+            selectedRating = val;
+            stars.forEach(star => {
+                if (parseInt(star.getAttribute('data-val')) <= val) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+        
+        updateStars(5);
+
+        stars.forEach(star => {
+            star.addEventListener('click', (e) => {
+                updateStars(parseInt(e.target.getAttribute('data-val')));
+            });
+        });
+
+        function submitReview() {
+            const historyStr = localStorage.getItem('history');
+            const historyArr = historyStr ? JSON.parse(historyStr) : [];
+            
+            const date = new Date();
+            const dateStr = date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+            const newBooking = {
+                id: Date.now(),
+                date: dateStr,
+                provider: providerName,
+                type: providerType,
+                amount: 500,
+                rating: selectedRating,
+                status: 'Completed'
+            };
+            
+            historyArr.unshift(newBooking);
+            localStorage.setItem('history', JSON.stringify(historyArr));
+            localStorage.removeItem('trackingData');
+            
+            window.location.href = 'history.html';
+        }
+    </script>
+</body>
+</html>

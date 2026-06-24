@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>About - Repair The Gear</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <style>
+        .header-bar {
+            display: flex; align-items: center; padding: var(--spacing-m);
+            font-size: 18px; font-weight: 600; border-bottom: 1px solid var(--border);
+            color: var(--text);
+            background: var(--surface);
+            position: sticky; top: 0; z-index: 10;
+        }
+        .back-btn {
+            font-size: 24px; color: var(--text); margin-right: var(--spacing-m); cursor: pointer; text-decoration: none;
+        }
+        .about-content {
+            padding: var(--spacing-l);
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+        .about-content h2 {
+            color: var(--primary);
+            margin-bottom: var(--spacing-m);
+        }
+        .about-content h3 {
+            color: var(--text);
+            margin-bottom: var(--spacing-s);
+            margin-top: var(--spacing-xl);
+        }
+        .about-content ul {
+            list-style-type: none;
+            padding-left: 0;
+            margin-bottom: var(--spacing-l);
+        }
+        .about-content li {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: flex-start;
+        }
+        .about-content li ion-icon {
+            color: var(--primary);
+            margin-right: 12px;
+            font-size: 20px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+        .about-content p {
+            margin-bottom: var(--spacing-m);
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-wrapper">
+        <div class="fade-in" style="flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding-bottom: 40px;">
+            <div class="header-bar">
+                <a href="profile.html" class="back-btn"><ion-icon name="arrow-back-outline"></ion-icon></a>
+                About Us
+            </div>
+            
+            <div class="about-content">
+                <div style="text-align: center; margin-bottom: var(--spacing-xl);">
+                    <img src="img/logo.png" alt="Logo" style="height: 100px; margin-bottom: var(--spacing-m);" onerror="this.src='https://via.placeholder.com/100?text=Logo'">
+                    <h2 style="margin: 0;">Repair The Gear</h2>
+                </div>
+                
+                <p>Repair The Gear is a smart roadside assistance platform designed to connect vehicle owners with nearby mechanics and towing services during emergencies.</p>
+                
+                <p>Whether you're dealing with a flat tire, battery failure, engine trouble, or an unexpected breakdown, our app helps you quickly locate and contact verified mechanics in your area. Using real-time GPS technology, Repair The Gear matches users with the nearest available service providers, reducing wait times and getting drivers back on the road faster.</p>
+                
+                <p>Our mission is to make roadside assistance simple, reliable, and accessible for everyone. By combining location-based services, instant request management, and a user-friendly interface, Repair The Gear provides a seamless experience for both vehicle owners and mechanics.</p>
+
+                <h3>Key Features</h3>
+                <ul>
+                    <li><ion-icon name="checkmark-circle"></ion-icon><span>Real-time mechanic discovery using GPS</span></li>
+                    <li><ion-icon name="checkmark-circle"></ion-icon><span>Emergency roadside assistance requests</span></li>
+                    <li><ion-icon name="checkmark-circle"></ion-icon><span>Nearby towing service support</span></li>
+                    <li><ion-icon name="checkmark-circle"></ion-icon><span>Secure and easy-to-use platform</span></li>
+                    <li><ion-icon name="checkmark-circle"></ion-icon><span>Fast response and reduced waiting times</span></li>
+                    <li><ion-icon name="checkmark-circle"></ion-icon><span>Service tracking and request management</span></li>
+                </ul>
+
+                <p style="text-align: center; font-style: italic; color: var(--text); font-weight: 500; margin-top: var(--spacing-xl);">
+                    "Repair The Gear is built to ensure that help is always just a few taps away."
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

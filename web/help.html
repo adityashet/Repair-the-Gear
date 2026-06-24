@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Help & Support - Repair The Gear</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <style>
+        .header-bar {
+            display: flex; align-items: center; padding: var(--spacing-m);
+            font-size: 18px; font-weight: 600; border-bottom: 1px solid var(--border);
+            color: var(--text);
+            background: var(--surface);
+            position: sticky; top: 0; z-index: 10;
+        }
+        .back-btn {
+            font-size: 24px; color: var(--text); margin-right: var(--spacing-m); cursor: pointer; text-decoration: none;
+        }
+        .help-container {
+            padding: var(--spacing-l);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .help-icon {
+            font-size: 80px;
+            color: var(--primary);
+            margin: var(--spacing-xl) 0 var(--spacing-m) 0;
+        }
+        .help-card {
+            background: var(--surface);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-xl) var(--spacing-l);
+            width: 100%;
+            margin-top: var(--spacing-l);
+            border: 1px solid var(--border);
+        }
+        .phone-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text);
+            margin: var(--spacing-m) 0;
+            display: block;
+            text-decoration: none;
+            letter-spacing: 1px;
+        }
+        .call-btn {
+            width: 100%;
+            background: var(--primary);
+            color: #0B1120;
+            padding: 14px;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-wrapper">
+        <div class="fade-in" style="flex: 1; display: flex; flex-direction: column;">
+            <div class="header-bar">
+                <a href="profile.html" class="back-btn"><ion-icon name="arrow-back-outline"></ion-icon></a>
+                Help & Support
+            </div>
+            
+            <div class="help-container">
+                <ion-icon name="headset" class="help-icon"></ion-icon>
+                <h2 style="margin-bottom: 8px;">We're here to help</h2>
+                <p class="text-secondary">If you are facing any issues or need immediate assistance, please reach out to our 24/7 customer support.</p>
+                
+                <div class="help-card">
+                    <p class="text-secondary" style="font-size: 14px; text-transform: uppercase; font-weight: 600;">Customer Care</p>
+                    <a href="tel:6362175792" class="phone-number">6362175792</a>
+                    
+                    <a href="tel:6362175792" class="call-btn mt-m">
+                        <ion-icon name="call" style="margin-right: 8px; font-size: 20px;"></ion-icon> Call Now
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tracking - Repair The Gear</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Leaflet CSS for real maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <style>
+        body { overflow: hidden; margin: 0; }
+        .call-btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+        }
+        .trip-modal-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+        .trip-modal {
+            background: var(--surface);
+            border-radius: 20px 20px 0 0;
+            padding: var(--spacing-l);
+        }
+        .map-wrapper {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #0B1120;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: var(--text-secondary);
+        }
+        
+        /* Leaflet custom icons styling override */
+        .leaflet-marker-icon {
+            background: none;
+            border: none;
+        }
+
+        .tracking-card {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            background: var(--surface);
+            border-top-left-radius: var(--border-radius-xl);
+            border-top-right-radius: var(--border-radius-xl);
+            padding: var(--spacing-l);
+            box-shadow: 0 -4px 16px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+        .profile-row {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: var(--spacing-m);
+            margin-bottom: var(--spacing-m);
+        }
+        .avatar {
+            width: 48px; height: 48px; border-radius: 24px;
+            background: var(--primary);
+            color: white; display: flex; justify-content: center; align-items: center;
+            font-size: 24px; margin-right: var(--spacing-m);
+        }
+        .call-btn {
+            width: 48px; height: 48px; border-radius: 24px;
+            background: var(--success);
+            color: white; display: flex; justify-content: center; align-items: center;
+            font-size: 20px; border: none; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-wrapper">
+    
+    <!-- Real Map Container -->
+    <div id="trackingMap" class="map-wrapper" style="z-index: 1;"></div>
+
+    <div class="tracking-card slide-up" style="padding: var(--spacing-m);">
+        <div class="mb-s" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h2 style="font-size: 18px; margin-bottom: 4px;">Provider is on the way</h2>
+                <p class="text-secondary" style="font-weight: 600; font-size: 14px;"><span id="distText">Distance</span> away</p>
+            </div>
+            <div style="text-align: right; background: rgba(56, 189, 248, 0.1); padding: 8px 12px; border-radius: var(--border-radius);">
+                <div style="font-size: 12px; color: var(--secondary); font-weight: 600;">ETA</div>
+                <div style="font-size: 16px; font-weight: 700; color: var(--text);" id="etaText">8 mins</div>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: var(--spacing-m);">
+            <div class="text-secondary" style="font-size: 14px;">Start service with PIN</div>
+            <div style="display: flex; gap: 8px;">
+                <div style="background: var(--background); border: 1px solid var(--border); width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; border-radius: 4px; font-weight: 700;">7</div>
+                <div style="background: var(--background); border: 1px solid var(--border); width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; border-radius: 4px; font-weight: 700;">6</div>
+                <div style="background: var(--background); border: 1px solid var(--border); width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; border-radius: 4px; font-weight: 700;">4</div>
+                <div style="background: var(--background); border: 1px solid var(--border); width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; border-radius: 4px; font-weight: 700;">9</div>
+            </div>
+        </div>
+
+        <div class="profile-row" style="border: none; padding-bottom: 0; margin-bottom: var(--spacing-m);">
+            <div style="flex: 1;">
+                <h3 style="margin:0; font-size: 18px; color: var(--text);" id="nameText">Provider Name</h3>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <div class="avatar" id="avatarColor" style="margin-right: 0; width: 40px; height: 40px; font-size: 20px; margin-bottom: 4px;">
+                    <ion-icon name="person" id="avatarIcon"></ion-icon>
+                </div>
+                <div style="background: #334155; padding: 2px 6px; border-radius: 12px; font-size: 12px; display: flex; align-items: center; font-weight: 600;">
+                    4.8 <ion-icon name="star" style="color: var(--primary); margin-left: 2px;"></ion-icon>
+                </div>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: var(--spacing-s); margin-bottom: var(--spacing-m);">
+            <button class="call-btn" style="border-radius: var(--border-radius); flex: 0 0 48px;"><ion-icon name="call"></ion-icon></button>
+            <div style="flex: 1; background: var(--background); border: 1px solid var(--border); border-radius: var(--border-radius); display: flex; align-items: center; padding: 0 var(--spacing-m); color: var(--text-secondary);">
+                <ion-icon name="chatbubble-ellipses" style="margin-right: 8px; font-size: 20px;"></ion-icon> Message provider
+            </div>
+        </div>
+
+        <div style="font-size: 14px; margin-bottom: 8px; color: var(--text-secondary);">Service location</div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%;">Current Location</div>
+            <button class="btn btn-outline" style="padding: 6px 16px; border-radius: 20px; font-size: 14px; background: transparent; border: 1px solid var(--border); color: var(--text);" onclick="openTripDetails()">Trip Details</button>
+        </div>
+    </div>
+
+    <!-- Trip Details Modal -->
+    <div id="tripDetailsModal" class="trip-modal-overlay" style="display: none;">
+        <div class="trip-modal slide-up">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-l);">
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 600;">
+                    <div style="width: 32px; height: 32px; background: var(--primary); display: flex; align-items: center; justify-content: center; border-radius: 4px; color: #0B1120;" id="modalIconBg">
+                        <ion-icon name="build" id="modalIcon"></ion-icon>
+                    </div>
+                    <span id="modalTypeTitle">Mechanic Service</span>
+                </div>
+                <button onclick="closeTripDetails()" style="background: transparent; border: none; color: var(--text); font-size: 24px;"><ion-icon name="close"></ion-icon></button>
+            </div>
+
+            <div style="margin-bottom: var(--spacing-l);">
+                <h4 style="color: var(--text-secondary); margin-bottom: 8px; font-size: 14px;">Location Details</h4>
+                <div style="display: flex; align-items: flex-start; gap: 12px;">
+                    <div style="width: 12px; height: 12px; border: 3px solid var(--success); border-radius: 50%; margin-top: 4px;"></div>
+                    <div>
+                        <div style="font-weight: 600;">Current Location</div>
+                        <div style="font-size: 14px; color: var(--text-secondary); margin-top: 2px;">Vehicle breakdown location</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: var(--spacing-l);">
+                <div style="font-weight: 600; color: var(--text-secondary);">Total Fare</div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-weight: 700; font-size: 18px;">₹500 <ion-icon name="chevron-down-outline" style="font-size: 14px; color: var(--text-secondary);"></ion-icon></span>
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--spacing-xl);">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="background: rgba(76, 175, 80, 0.2); color: var(--success); width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 4px;">₹</div>
+                    <span style="font-weight: 600; color: var(--text-secondary);">Paying via Cash</span>
+                </div>
+                <span style="color: var(--secondary); font-weight: 600;">Change</span>
+            </div>
+
+            <button class="btn btn-outline" style="color: #ef4444; border-color: transparent; background: rgba(239, 68, 68, 0.1); width: 100%; margin-bottom: var(--spacing-s); font-weight: 600;" onclick="cancelBooking()">Cancel Booking</button>
+            <button class="btn btn-primary" style="width: 100%;" onclick="completeService()">Simulate Completion</button>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        function cancelBooking() {
+            localStorage.removeItem('trackingData');
+            window.location.href = 'home.html';
+        }
+        // Load data
+        const dataStr = localStorage.getItem('trackingData');
+        let isTow = false;
+        if (dataStr) {
+            const data = JSON.parse(dataStr);
+            document.getElementById('nameText').textContent = data.name;
+            document.getElementById('etaText').textContent = data.eta;
+            document.getElementById('distText').textContent = data.dist + ' away';
+            
+            if(data.type === 'tow') {
+                isTow = true;
+                document.getElementById('avatarColor').style.backgroundColor = 'var(--warning)';
+                document.getElementById('avatarIcon').name = 'business';
+                document.getElementById('modalTypeTitle').textContent = 'Tow Service';
+                document.getElementById('modalIconBg').style.backgroundColor = 'var(--warning)';
+                document.getElementById('modalIcon').name = 'business';
+            }
+        }
+
+        function openTripDetails() {
+            document.getElementById('tripDetailsModal').style.display = 'flex';
+        }
+        
+        function closeTripDetails() {
+            document.getElementById('tripDetailsModal').style.display = 'none';
+        }
+
+        // Initialize Map
+        const map = L.map('trackingMap', { zoomControl: false });
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+        }).addTo(map);
+
+        // Simulated coordinates (e.g. user in Bangalore)
+        const userLoc = [12.895690, 77.635640];
+        let providerLoc = [12.915690, 77.615640];
+
+        map.setView([(userLoc[0] + providerLoc[0])/2, (userLoc[1] + providerLoc[1])/2], 13);
+
+        // Custom Icons
+        const userIcon = L.divIcon({
+            html: '<div style="width:16px;height:16px;background:var(--secondary);border:2px solid white;border-radius:50%;"></div>',
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
+        });
+
+        const providerIconHtml = isTow ? 
+            '<div style="width:32px;height:32px;background:var(--warning);border:2px solid white;border-radius:50%;display:flex;justify-content:center;align-items:center;color:white;"><ion-icon name="business"></ion-icon></div>' :
+            '<div style="width:32px;height:32px;background:var(--primary);border:2px solid white;border-radius:50%;display:flex;justify-content:center;align-items:center;color:#0B1120;"><ion-icon name="car"></ion-icon></div>';
+
+        const providerIcon = L.divIcon({
+            html: providerIconHtml,
+            iconSize: [36, 36],
+            iconAnchor: [18, 18]
+        });
+
+        L.marker(userLoc, {icon: userIcon}).addTo(map);
+        const providerMarker = L.marker(providerLoc, {icon: providerIcon}).addTo(map);
+
+        const routeLine = L.polyline([providerLoc, userLoc], {color: 'var(--secondary)', weight: 4, dashArray: '5, 5'}).addTo(map);
+
+        // Simulate Movement
+        const moveInterval = setInterval(() => {
+            const latDiff = userLoc[0] - providerLoc[0];
+            const lonDiff = userLoc[1] - providerLoc[1];
+            
+            providerLoc[0] += latDiff * 0.05;
+            providerLoc[1] += lonDiff * 0.05;
+            
+            providerMarker.setLatLng(providerLoc);
+            routeLine.setLatLngs([providerLoc, userLoc]);
+            
+            // Check if arrived (roughly)
+            if (Math.abs(latDiff) < 0.001 && Math.abs(lonDiff) < 0.001) {
+                clearInterval(moveInterval);
+            }
+        }, 1000);
+
+        function completeService() {
+            window.location.href = 'payment.html';
+        }
+    </script>
+    </div>
+</body>
+</html>

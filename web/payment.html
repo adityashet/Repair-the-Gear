@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Payment - Repair The Gear</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <style>
+        .header-bar {
+            display: flex; align-items: center; padding: var(--spacing-m);
+            font-size: 18px; font-weight: 600; border-bottom: 1px solid var(--border);
+            color: var(--text);
+            background: var(--surface);
+        }
+        .pay-card {
+            background: var(--surface);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-xl);
+            margin: var(--spacing-m);
+            text-align: center;
+        }
+        .amount {
+            font-size: 40px;
+            font-weight: 700;
+            color: var(--primary);
+            margin: var(--spacing-m) 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-wrapper">
+        <div class="fade-in" style="flex: 1; display: flex; flex-direction: column;">
+            <div class="header-bar">Payment & Feedback</div>
+            
+            <div class="pay-card">
+                <h2 id="providerName" style="margin-top: 0;">Service Provider</h2>
+                <p class="text-secondary">Job Completed Successfully</p>
+                <div class="amount">₹500</div>
+                <p class="text-secondary" style="font-size: 14px; margin-bottom: 0;">Fixed service charge</p>
+            </div>
+
+            <div style="padding: var(--spacing-m); margin-top: auto; margin-bottom: var(--spacing-l);">
+                <button class="btn btn-primary" onclick="window.location.href='review.html'" style="width: 100%;">Pay ₹500</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        const dataStr = localStorage.getItem('trackingData');
+        if (dataStr) {
+            const data = JSON.parse(dataStr);
+            document.getElementById('providerName').textContent = data.name;
+        }
+    </script>
+</body>
+</html>
