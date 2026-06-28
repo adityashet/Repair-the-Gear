@@ -181,9 +181,13 @@
         <!-- Center Pin Overlay -->
         <div class="center-pin-container" id="centerPinContainer">
             <div class="pin-marker">
-                <svg width="42" height="42" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2C7.58 2 4 5.58 4 10C4 16 12 22 12 22C12 22 20 16 20 10C20 5.58 16.42 2 12 2Z" fill="#10B981" stroke="#1E293B" stroke-width="1.5"/>
-                    <circle cx="12" cy="10" r="3.5" fill="#FFFFFF"/>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Needle stem -->
+                    <line x1="12" y1="14" x2="12" y2="22.5" stroke="#22C55E" stroke-width="2.2" stroke-linecap="round" />
+                    <!-- Green outer head circle -->
+                    <circle cx="12" cy="8" r="7.5" fill="#22C55E" stroke="#1E293B" stroke-width="1.5" />
+                    <!-- White center circle -->
+                    <circle cx="12" cy="8" r="3.6" fill="#FFFFFF" />
                 </svg>
             </div>
             <div class="pin-shadow"></div>

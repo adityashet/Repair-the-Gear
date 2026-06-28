@@ -185,7 +185,7 @@ export default function HomeScreen({ navigation }: Props) {
             <View style={styles.greenPinHead}>
               <View style={styles.greenPinCenter} />
             </View>
-            <View style={styles.greenPinTip} />
+            <View style={styles.greenPinStem} />
             <View style={[
               styles.pinShadow,
               isDragging && { transform: [{ scale: 0.4 }], opacity: 0.2 }
@@ -244,8 +244,8 @@ const createStyles = (colors: typeof darkColors) => StyleSheet.create({
     position: 'absolute',
     top: '50%',
     left: '50%',
-    marginLeft: -18, // Center exactly (half of 36px width)
-    marginTop: -44,  // Center pin bottom tip on coordinates (36 height + 10 tip - 2 overlap)
+    marginLeft: -13, // Center exactly (half of 26px width)
+    marginTop: -38,  // Center pin needle tip on coordinates (26 height + 13 needle - 1 overlap)
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,
@@ -255,12 +255,12 @@ const createStyles = (colors: typeof darkColors) => StyleSheet.create({
     justifyContent: 'center',
   },
   greenPinHead: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#10B981', // Green color
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: '#22C55E', // Bright cute green
     borderWidth: 1.5,
-    borderColor: '#1E293B', // Dark outline matching web SVG
+    borderColor: '#1E293B',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 2,
@@ -269,26 +269,21 @@ const createStyles = (colors: typeof darkColors) => StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#FFFFFF', // White center dot
+    backgroundColor: '#FFFFFF', // Cute white center dot
   },
-  greenPinTip: {
-    width: 0,
-    height: 0,
-    borderLeftWidth: 6,
-    borderLeftColor: 'transparent',
-    borderRightWidth: 6,
-    borderRightColor: 'transparent',
-    borderTopWidth: 10,
-    borderTopColor: '#10B981', // Green pointer tip matching head
-    marginTop: -2, // Slight overlap to weld them together
+  greenPinStem: {
+    width: 2.2,
+    height: 13,
+    backgroundColor: '#22C55E', // Thin green needle stem extending straight down
+    marginTop: -1,
     zIndex: 1,
   },
   pinShadow: {
-    width: 14,
-    height: 4,
+    width: 10,
+    height: 3,
     backgroundColor: 'rgba(0,0,0,0.35)',
-    borderRadius: 2,
-    marginTop: 2,
+    borderRadius: 1.5,
+    marginTop: 1,
   },
   locateMeButton: {
     position: 'absolute',
