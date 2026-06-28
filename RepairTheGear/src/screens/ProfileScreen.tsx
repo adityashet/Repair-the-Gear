@@ -27,7 +27,7 @@ export default function ProfileScreen({ navigation }: any) {
       <ScrollView style={styles.scrollView} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 30 }}>
         {/* User Card */}
         <View style={styles.card}>
-          <TouchableOpacity style={styles.profileRow}>
+          <TouchableOpacity style={styles.profileRow} onPress={() => navigation.navigate('AccountDetails')}>
             <View style={styles.avatar}>
               <Ionicons name="person" size={32} color="#94A3B8" />
             </View>
@@ -63,7 +63,7 @@ export default function ProfileScreen({ navigation }: any) {
           <View style={styles.divider} />
 
           {/* Help Row */}
-          <TouchableOpacity style={styles.optionRow}>
+          <TouchableOpacity style={styles.optionRow} onPress={() => navigation.navigate('Help')}>
             <View style={styles.rowLeft}>
               <Ionicons name="help-circle" size={22} color="#94A3B8" style={styles.iconMargin} />
               <Text style={styles.rowText}>Help</Text>
@@ -85,7 +85,7 @@ export default function ProfileScreen({ navigation }: any) {
           <View style={styles.divider} />
 
           {/* About Row */}
-          <TouchableOpacity style={styles.optionRow}>
+          <TouchableOpacity style={styles.optionRow} onPress={() => navigation.navigate('About')}>
             <View style={styles.rowLeft}>
               <Ionicons name="information-circle" size={22} color="#94A3B8" style={styles.iconMargin} />
               <Text style={styles.rowText}>About</Text>

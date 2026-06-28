@@ -16,6 +16,9 @@ import HistoryScreen from '../screens/HistoryScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import PaymentScreen from '../screens/PaymentScreen';
 import RatingScreen from '../screens/RatingScreen';
+import HelpScreen from '../screens/HelpScreen';
+import AccountDetailsScreen from '../screens/AccountDetailsScreen';
+import AboutScreen from '../screens/AboutScreen';
 import { theme } from '../constants/theme';
 
 export type RootStackParamList = {
@@ -33,6 +36,9 @@ export type RootStackParamList = {
   TowService: { userLocation?: { latitude: number; longitude: number; address: string } } | undefined;
   Payment: { mechanicName: string; amount: number; isTow?: boolean };
   Rating: { mechanicName: string; isTow?: boolean };
+  Help: undefined;
+  AccountDetails: undefined;
+  About: undefined;
 };
 
 export type MainTabParamList = {
@@ -109,6 +115,9 @@ export default function AppNavigator() {
         <Stack.Screen name="TowService" component={TowServiceScreen} />
         <Stack.Screen name="Payment" component={PaymentScreen} />
         <Stack.Screen name="Rating" component={RatingScreen} />
+        <Stack.Screen name="Help" component={HelpScreen} />
+        <Stack.Screen name="AccountDetails" component={AccountDetailsScreen} />
+        <Stack.Screen name="About" component={AboutScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
