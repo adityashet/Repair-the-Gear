@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../constants/theme';
+import { theme, darkColors } from '../constants/theme';
+import { useTheme, useThemeStyles } from '../context/ThemeContext';
 
 const MOCK_HISTORY = [
   {
@@ -31,6 +32,9 @@ const MOCK_HISTORY = [
 ];
 
 export default function HistoryScreen() {
+  const styles = useThemeStyles(createStyles);
+  const { colors } = useTheme();
+
   const renderItem = ({ item }: { item: typeof MOCK_HISTORY[0] }) => (
     <View style={styles.historyCard}>
       <View style={styles.cardHeader}>
@@ -74,14 +78,15 @@ export default function HistoryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: typeof darkColors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: colors.background,
     paddingTop: 60, // For safe area roughly
   },
   title: {
     ...theme.typography.title,
+    color: colors.text,
     paddingHorizontal: theme.spacing.m,
     marginBottom: theme.spacing.m,
   },
@@ -90,12 +95,12 @@ const styles = StyleSheet.create({
     paddingBottom: theme.spacing.xxl,
   },
   historyCard: {
-    backgroundColor: theme.colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: theme.spacing.m,
     marginBottom: theme.spacing.m,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: colors.border,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -109,11 +114,13 @@ const styles = StyleSheet.create({
   },
   typeText: {
     ...theme.typography.body,
+    color: colors.text,
     fontWeight: '600',
     marginLeft: 8,
   },
   dateText: {
     ...theme.typography.bodySecondary,
+    color: colors.textSecondary,
   },
   cardBody: {
     flexDirection: 'row',
@@ -122,16 +129,18 @@ const styles = StyleSheet.create({
   },
   providerText: {
     ...theme.typography.body,
+    color: colors.text,
   },
   costText: {
     ...theme.typography.header,
+    color: colors.text,
   },
   cardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
+    borderTopColor: colors.border,
     paddingTop: theme.spacing.m,
   },
   statusBadge: {
@@ -141,12 +150,12 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   statusText: {
-    color: theme.colors.success,
+    color: colors.success,
     fontSize: 12,
     fontWeight: '600',
   },
   receiptText: {
-    color: theme.colors.secondary,
+    color: colors.secondary,
     fontWeight: '600',
   },
 });

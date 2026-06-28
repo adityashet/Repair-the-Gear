@@ -1,122 +1,391 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../constants/theme';
+import { theme, darkColors } from '../constants/theme';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import type { RootStackParamList } from '../navigation/AppNavigator';
+import { useTheme, useThemeStyles } from '../context/ThemeContext';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Home'>; // Simplified for typing
+type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export default function ProfileScreen({ navigation }: any) {
+  const [themeModalVisible, setThemeModalVisible] = useState(false);
+  const { themeMode, setThemeMode, colors } = useTheme();
+
   const handleLogout = () => {
-    // Navigate to splash or login
     navigation.replace('Login');
   };
 
-  const renderOption = (icon: keyof typeof Ionicons.glyphMap, title: string) => (
-    <TouchableOpacity style={styles.optionRow}>
-      <View style={styles.optionIcon}>
-        <Ionicons name={icon} size={24} color={theme.colors.text} />
-      </View>
-      <Text style={styles.optionTitle}>{title}</Text>
-      <Ionicons name="chevron-forward" size={24} color={theme.colors.textSecondary} />
-    </TouchableOpacity>
-  );
-
+  const styles = useThemeStyles(createStyles);
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>A</Text>
+        <Text style={styles.headerTitle}>Profile</Text>
+      </View>
+
+      <ScrollView style={styles.scrollView} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 30 }}>
+        {/* User Card */}
+        <View style={styles.card}>
+          <TouchableOpacity style={styles.profileRow}>
+            <View style={styles.avatar}>
+              <Ionicons name="person" size={32} color="#94A3B8" />
+            </View>
+            <View style={styles.userInfo}>
+              <Text style={styles.nameText}>aditya</Text>
+              <Text style={styles.phoneText}>1234567890</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#64748B" />
+          </TouchableOpacity>
+
+          <View style={styles.divider} />
+
+          <TouchableOpacity style={styles.ratingRow}>
+            <View style={styles.rowLeft}>
+              <Ionicons name="star" size={20} color={theme.colors.primary} />
+              <Text style={styles.rowText}>4.64 My Rating</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#64748B" />
+          </TouchableOpacity>
         </View>
-        <Text style={styles.name}>Alex User</Text>
-        <Text style={styles.phone}>+91 98765 43210</Text>
-      </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Account</Text>
-        {renderOption('person-outline', 'Edit Profile')}
-        {renderOption('car-outline', 'Saved Vehicles')}
-        {renderOption('card-outline', 'Payment Methods')}
-      </View>
+        {/* Options Settings Card */}
+        <View style={styles.card}>
+          {/* Theme Row */}
+          <TouchableOpacity style={styles.optionRow} onPress={() => setThemeModalVisible(true)}>
+            <View style={styles.rowLeft}>
+              <Ionicons name="color-palette" size={22} color="#94A3B8" style={styles.iconMargin} />
+              <Text style={styles.rowText}>Theme</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#64748B" />
+          </TouchableOpacity>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Safety</Text>
-        {renderOption('shield-checkmark-outline', 'Emergency Contacts')}
-        {renderOption('document-text-outline', 'Terms & Conditions')}
-      </View>
+          <View style={styles.divider} />
 
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Log Out</Text>
-      </TouchableOpacity>
-    </ScrollView>
+          {/* Help Row */}
+          <TouchableOpacity style={styles.optionRow}>
+            <View style={styles.rowLeft}>
+              <Ionicons name="help-circle" size={22} color="#94A3B8" style={styles.iconMargin} />
+              <Text style={styles.rowText}>Help</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#64748B" />
+          </TouchableOpacity>
+
+          <View style={styles.divider} />
+
+          {/* Safety Row */}
+          <TouchableOpacity style={styles.optionRow}>
+            <View style={styles.rowLeft}>
+              <Ionicons name="shield-checkmark" size={22} color="#94A3B8" style={styles.iconMargin} />
+              <Text style={styles.rowText}>Safety</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#64748B" />
+          </TouchableOpacity>
+
+          <View style={styles.divider} />
+
+          {/* About Row */}
+          <TouchableOpacity style={styles.optionRow}>
+            <View style={styles.rowLeft}>
+              <Ionicons name="information-circle" size={22} color="#94A3B8" style={styles.iconMargin} />
+              <Text style={styles.rowText}>About</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#64748B" />
+          </TouchableOpacity>
+
+          <View style={styles.divider} />
+
+          {/* Log Out Row */}
+          <TouchableOpacity style={styles.optionRow} onPress={handleLogout}>
+            <View style={styles.rowLeft}>
+              <Ionicons name="log-out" size={22} color="#ef4444" style={styles.iconMargin} />
+              <Text style={[styles.rowText, { color: '#ef4444' }]}>Log Out</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#ef4444" />
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+
+      {/* Theme Slide-up Modal Sheet (Screenshot #2 style) */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={themeModalVisible}
+        onRequestClose={() => setThemeModalVisible(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay} 
+          activeOpacity={1} 
+          onPressOut={() => setThemeModalVisible(false)}
+        >
+          <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
+            {/* Modal Handle Bar */}
+            <View style={styles.modalHandle} />
+
+            <Text style={styles.modalTitle}>Theme</Text>
+            <Text style={styles.modalSubTitle}>APPEARANCE</Text>
+
+            {/* Theme Options Row */}
+            <View style={styles.themeOptionsRow}>
+              {/* Light Option */}
+              <View style={styles.themeOptionColumn}>
+                <TouchableOpacity 
+                  style={[
+                    styles.themeOptionCard, 
+                    themeMode === 'light' && styles.themeOptionCardSelected
+                  ]}
+                  onPress={() => setThemeMode('light')}
+                >
+                  <View style={styles.mockupContainer}>
+                    <View style={styles.lightMockupHeader} />
+                    <View style={styles.lightMockupBody} />
+                  </View>
+                  <Text style={[styles.themeOptionTitle, themeMode === 'light' && styles.selectedText]}>Light</Text>
+                  <Text style={styles.themeOptionSub}>Always bright</Text>
+                </TouchableOpacity>
+                {themeMode === 'light' && (
+                  <Ionicons name="checkmark-circle" size={22} color={colors.primary} style={{ marginTop: 8 }} />
+                )}
+              </View>
+
+              {/* Dark Option */}
+              <View style={styles.themeOptionColumn}>
+                <TouchableOpacity 
+                  style={[
+                    styles.themeOptionCard, 
+                    themeMode === 'dark' && styles.themeOptionCardSelected
+                  ]}
+                  onPress={() => setThemeMode('dark')}
+                >
+                  <View style={styles.mockupContainer}>
+                    <View style={styles.darkMockupHeader} />
+                    <View style={styles.darkMockupBody} />
+                  </View>
+                  <Text style={[styles.themeOptionTitle, themeMode === 'dark' && styles.selectedText]}>Dark</Text>
+                  <Text style={styles.themeOptionSub}>Always dark</Text>
+                </TouchableOpacity>
+                {themeMode === 'dark' && (
+                  <Ionicons name="checkmark-circle" size={22} color={colors.primary} style={{ marginTop: 8 }} />
+                )}
+              </View>
+
+              {/* Auto Option */}
+              <View style={styles.themeOptionColumn}>
+                <TouchableOpacity 
+                  style={[
+                    styles.themeOptionCard, 
+                    themeMode === 'auto' && styles.themeOptionCardSelected
+                  ]}
+                  onPress={() => setThemeMode('auto')}
+                >
+                  <View style={styles.mockupContainer}>
+                    <View style={{ flex: 1, flexDirection: 'row' }}>
+                      <View style={{ flex: 1, backgroundColor: '#E2E8F0' }} />
+                      <View style={{ flex: 1, backgroundColor: '#0F172A' }} />
+                    </View>
+                  </View>
+                  <Text style={[styles.themeOptionTitle, themeMode === 'auto' && styles.selectedText]}>Auto</Text>
+                  <Text style={styles.themeOptionSub}>Follows IST time</Text>
+                </TouchableOpacity>
+                {themeMode === 'auto' && (
+                  <Ionicons name="checkmark-circle" size={22} color={colors.primary} style={{ marginTop: 8 }} />
+                )}
+              </View>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: typeof darkColors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: colors.background,
   },
   header: {
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingBottom: theme.spacing.m,
     alignItems: 'center',
-    paddingVertical: theme.spacing.xxl,
+    backgroundColor: colors.background,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
+    borderBottomColor: colors.border,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  scrollView: {
+    flex: 1,
+    paddingTop: 16,
+  },
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  profileRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: theme.colors.primary,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: theme.spacing.m,
   },
-  avatarText: {
-    ...theme.typography.title,
-    color: theme.colors.white,
+  userInfo: {
+    flex: 1,
+    marginLeft: 16,
   },
-  name: {
-    ...theme.typography.title,
-    marginBottom: 4,
+  nameText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text,
   },
-  phone: {
-    ...theme.typography.bodySecondary,
+  phoneText: {
+    fontSize: 14,
+    color: colors.primary,
+    fontWeight: '700',
+    marginTop: 4,
   },
-  section: {
-    marginTop: theme.spacing.l,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-    paddingBottom: theme.spacing.m,
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
   },
-  sectionTitle: {
-    ...theme.typography.bodySecondary,
+  rowLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  rowText: {
+    fontSize: 15,
     fontWeight: '600',
-    paddingHorizontal: theme.spacing.m,
-    marginBottom: theme.spacing.s,
-    textTransform: 'uppercase',
+    color: colors.text,
+    marginLeft: 12,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.border,
   },
   optionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: theme.spacing.m,
-    paddingHorizontal: theme.spacing.m,
+    justifyContent: 'space-between',
+    paddingVertical: 16,
   },
-  optionIcon: {
-    marginRight: theme.spacing.m,
+  iconMargin: {
+    width: 24,
+    textAlign: 'center',
   },
-  optionTitle: {
-    ...theme.typography.body,
+  // Modal layout
+  modalOverlay: {
     flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.75)',
+    justifyContent: 'flex-end',
   },
-  logoutButton: {
-    margin: theme.spacing.l,
-    padding: theme.spacing.m,
+  modalContent: {
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    padding: 24,
+    paddingBottom: Platform.OS === 'ios' ? 50 : 30,
     alignItems: 'center',
   },
-  logoutText: {
-    ...theme.typography.button,
-    color: theme.colors.error,
+  modalHandle: {
+    width: 44,
+    height: 4,
+    backgroundColor: colors.border,
+    borderRadius: 2,
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text,
+    alignSelf: 'flex-start',
+    marginBottom: 20,
+  },
+  modalSubTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.textSecondary,
+    letterSpacing: 1.5,
+    alignSelf: 'flex-start',
+    marginBottom: 16,
+  },
+  themeOptionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    gap: 10,
+  },
+  themeOptionColumn: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  themeOptionCard: {
+    width: '100%',
+    aspectRatio: 0.9,
+    backgroundColor: colors.background,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: 16,
+    padding: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  themeOptionCardSelected: {
+    borderColor: colors.primary,
+  },
+  mockupContainer: {
+    width: '100%',
+    height: '42%',
+    borderRadius: 6,
+    backgroundColor: colors.border,
+    overflow: 'hidden',
+    marginBottom: 10,
+  },
+  lightMockupHeader: {
+    height: '25%',
+    backgroundColor: '#E2E8F0',
+  },
+  lightMockupBody: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+  darkMockupHeader: {
+    height: '25%',
+    backgroundColor: '#1E293B',
+  },
+  darkMockupBody: {
+    flex: 1,
+    backgroundColor: '#0F172A',
+  },
+  themeOptionTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 2,
+  },
+  themeOptionSub: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  selectedText: {
+    color: colors.primary,
   },
 });

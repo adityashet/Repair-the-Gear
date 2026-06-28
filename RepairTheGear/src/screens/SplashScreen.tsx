@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { theme } from '../constants/theme';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import { theme, darkColors } from '../constants/theme';
+import type { RootStackParamList } from '../navigation/AppNavigator';
+import { useTheme, useThemeStyles } from '../context/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Splash'>;
 
@@ -14,24 +15,28 @@ export default function SplashScreen({ navigation }: Props) {
     return () => clearTimeout(timer);
   }, [navigation]);
 
+  const { colors } = useTheme();
+  const styles = useThemeStyles(createStyles);
+
   return (
     <View style={styles.container}>
       <Text style={styles.logo}>Repair The Gear</Text>
-      <ActivityIndicator size="large" color={theme.colors.primary} style={styles.loader} />
+      <ActivityIndicator size="large" color={colors.primary} style={styles.loader} />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: typeof darkColors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
   },
   logo: {
     ...theme.typography.title,
     fontSize: 32,
+    color: colors.text,
     marginBottom: theme.spacing.xl,
   },
   loader: {

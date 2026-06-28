@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Profile - Repair The Gear</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="js/theme.js" defer></script>
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <style>
@@ -29,51 +30,161 @@
             color: var(--text);
             border-bottom: 1px solid var(--border);
         }
-        .profile-row:last-child {
-            border-bottom: none;
-        }
+        .profile-row:last-child { border-bottom: none; }
         .p-avatar {
             width: 60px; height: 60px; border-radius: 30px; background: #94A3B8;
             color: #0B1120; font-size: 32px;
             display: flex; justify-content: center; align-items: center;
             margin-right: var(--spacing-m);
         }
-        .p-info {
-            flex: 1;
-        }
-        .p-name {
-            font-size: 18px; font-weight: 500; margin-bottom: 4px;
-        }
-        .p-phone {
-            font-size: 14px; color: var(--primary);
-        }
-        .chevron {
-            color: var(--text-secondary);
-            font-size: 20px;
-        }
+        .p-info { flex: 1; }
+        .p-name { font-size: 18px; font-weight: 500; margin-bottom: 4px; }
+        .p-phone { font-size: 14px; color: var(--primary); }
+        .chevron { color: var(--text-secondary); font-size: 20px; }
         .menu-item {
             display: flex; align-items: center; padding: 16px var(--spacing-m);
             text-decoration: none; color: var(--text);
             border-bottom: 1px solid var(--border);
+            cursor: pointer; background: none; width: 100%;
+            /* Match anchor styling exactly */
+            font-family: inherit; font-size: inherit;
+            border-left: none; border-right: none; border-top: none;
+            text-align: left;
+            justify-content: flex-start;
         }
-        .menu-item:last-child {
-            border-bottom: none;
-        }
+        .menu-item:last-child { border-bottom: none; }
         .menu-item ion-icon:first-child {
             font-size: 24px; color: var(--text-secondary); margin-right: var(--spacing-m);
         }
-        .menu-item span {
-            flex: 1; font-size: 16px;
+        .menu-item span { flex: 1; font-size: 16px; text-align: left; }
+
+        /* ── Theme Modal ── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 1000;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        .modal-overlay.hidden { display: none; }
+        .settings-sheet {
+            background: var(--surface);
+            border-radius: 24px 24px 0 0;
+            padding: 24px 20px 36px;
+            width: 100%;
+            max-width: 480px;
+            animation: slideUp 0.3s ease-out;
+        }
+        .sheet-handle {
+            width: 40px; height: 4px; border-radius: 2px;
+            background: var(--border); margin: 0 auto 20px;
+        }
+        .sheet-title {
+            font-size: 18px; font-weight: 700;
+            margin-bottom: 20px; color: var(--text);
+        }
+        .section-label {
+            font-size: 12px; font-weight: 700; letter-spacing: 0.8px;
+            color: var(--text-secondary); text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        /* Theme option cards */
+        .theme-options {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        .theme-card {
+            flex: 1;
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 16px 8px 42px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            background: var(--background);
+            position: relative;
+            min-height: 142px;
+        }
+        .theme-card.active {
+            border-color: var(--primary);
+            background: rgba(250, 204, 21, 0.08);
+        }
+        .theme-card .theme-preview {
+            width: 48px; height: 36px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        /* Light preview */
+        .preview-light .top-bar  { flex: 1; background: #F1F5F9; }
+        .preview-light .bottom-bar { height: 10px; background: #FFFFFF; }
+        /* Dark preview */
+        .preview-dark .top-bar  { flex: 1; background: #0B1120; }
+        .preview-dark .bottom-bar { height: 10px; background: #1E293B; }
+        /* Auto preview (split) */
+        .preview-auto {
+            flex-direction: row !important;
+        }
+        .preview-auto .half-light { flex: 1; background: #F1F5F9; }
+        .preview-auto .half-dark  { flex: 1; background: #0B1120; }
+
+        .theme-card .theme-name {
+            font-size: 13px; font-weight: 600; color: var(--text);
+        }
+        .theme-card .theme-desc {
+            font-size: 11px; color: var(--text-secondary); text-align: center;
+            line-height: 1.2;
+        }
+        .theme-card.active .theme-name { color: var(--primary); }
+
+        /* Checkmark badge */
+        .check-badge {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px; height: 20px; border-radius: 50%;
+            background: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            color: #0B1120; font-size: 13px; font-weight: 700;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .theme-card.active .check-badge { opacity: 1; }
+
+        .logout-btn {
+            width: 100%;
+            background: rgba(239,68,68,0.1);
+            color: #ef4444;
+            border: 1.5px solid rgba(239,68,68,0.3);
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
     </style>
 </head>
 <body>
     <div class="mobile-wrapper">
     <div class="fade-in" style="flex: 1; display: flex; flex-direction: column; padding-bottom: 70px; overflow-y: auto;">
-        
+
         <div class="page-title">Profile</div>
 
-        <!-- Top User Info Card -->
+        <!-- User Info Card -->
         <div class="main-card">
             <a href="account_details.html" class="profile-row">
                 <div class="p-avatar"><ion-icon name="person"></ion-icon></div>
@@ -90,8 +201,24 @@
             </div>
         </div>
 
-        <!-- Settings Options Card -->
+        <!-- Menu Card -->
         <div class="main-card">
+            <!-- Theme menu item (opens modal) -->
+            <button class="menu-item" onclick="openSettings()">
+                <!-- Inline SVG palette icon so it renders instantly -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                     fill="none" stroke="var(--text-secondary)" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round"
+                     style="margin-right: 16px; flex-shrink: 0;">
+                    <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
+                    <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
+                    <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>
+                    <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
+                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
+                </svg>
+                <span>Theme</span>
+                <ion-icon class="chevron" name="chevron-forward"></ion-icon>
+            </button>
             <a href="help.html" class="menu-item">
                 <ion-icon name="help-circle-outline"></ion-icon>
                 <span>Help</span>
@@ -107,6 +234,11 @@
                 <span>About</span>
                 <ion-icon class="chevron" name="chevron-forward"></ion-icon>
             </a>
+            <button class="menu-item" onclick="logout()" style="border-bottom: none;">
+                <ion-icon name="log-out-outline" style="color: #ef4444;"></ion-icon>
+                <span style="color: #ef4444; font-weight: 500;">Log Out</span>
+                <ion-icon class="chevron" name="chevron-forward" style="color: rgba(239, 68, 68, 0.4);"></ion-icon>
+            </button>
         </div>
 
     </div>
@@ -127,6 +259,53 @@
         </a>
     </nav>
 
+    <!-- ── Settings Modal ── -->
+    <div class="modal-overlay hidden" id="settingsModal" onclick="handleOverlayClick(event)">
+        <div class="settings-sheet" id="settingsSheet">
+            <div class="sheet-handle"></div>
+            <div class="sheet-title">Theme</div>
+
+            <!-- Theme Section -->
+            <div class="section-label">Appearance</div>
+            <div class="theme-options">
+
+                <!-- Light -->
+                <div class="theme-card" id="cardLight" onclick="setThemePref('light')">
+                    <div class="theme-preview preview-light">
+                        <div class="top-bar"></div>
+                        <div class="bottom-bar"></div>
+                    </div>
+                    <div class="theme-name">Light</div>
+                    <div class="theme-desc">Always bright</div>
+                    <div class="check-badge">✓</div>
+                </div>
+
+                <!-- Dark -->
+                <div class="theme-card" id="cardDark" onclick="setThemePref('dark')">
+                    <div class="theme-preview preview-dark">
+                        <div class="top-bar"></div>
+                        <div class="bottom-bar"></div>
+                    </div>
+                    <div class="theme-name">Dark</div>
+                    <div class="theme-desc">Always dark</div>
+                    <div class="check-badge">✓</div>
+                </div>
+
+                <!-- Auto -->
+                <div class="theme-card" id="cardAuto" onclick="setThemePref('auto')">
+                    <div class="theme-preview preview-auto">
+                        <div class="half-light"></div>
+                        <div class="half-dark"></div>
+                    </div>
+                    <div class="theme-name">Auto</div>
+                    <div class="theme-desc">Follows IST time</div>
+                    <div class="check-badge">✓</div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
     <script>
         // Load user data
         const userStr = localStorage.getItem('user');
@@ -135,7 +314,64 @@
             document.getElementById('userName').textContent = user.name || 'User';
             document.getElementById('userPhone').textContent = user.phone;
         }
+
+        // ── Theme preference ──
+        function setThemePref(pref) {
+            localStorage.setItem('themePref', pref);
+            updateCards(pref);
+
+            // Use theme.js's own setTheme() so the logic is consistent
+            if (typeof window.__applyTheme === 'function') {
+                window.__applyTheme();
+            } else {
+                // Fallback: apply directly
+                if (pref === 'light') {
+                    document.body.classList.add('light-theme');
+                } else if (pref === 'dark') {
+                    document.body.classList.remove('light-theme');
+                } else {
+                    // Auto fallback: Day is 6am to 6pm IST
+                    const now = new Date();
+                    const utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
+                    const istDate = new Date(utcMs + 330 * 60000);
+                    const hour = istDate.getHours();
+                    if (hour >= 6 && hour < 18) {
+                        document.body.classList.add('light-theme');
+                    } else {
+                        document.body.classList.remove('light-theme');
+                    }
+                }
+            }
+        }
+
+        function updateCards(pref) {
+            document.getElementById('cardLight').classList.toggle('active', pref === 'light');
+            document.getElementById('cardDark').classList.toggle('active', pref === 'dark');
+            document.getElementById('cardAuto').classList.toggle('active', pref === 'auto');
+        }
+
+        // Highlight the already-saved preference on page load
+        const savedPref = localStorage.getItem('themePref') || 'auto';
+        updateCards(savedPref);
+
+        // ── Modal open/close ──
+        function openSettings() {
+            document.getElementById('settingsModal').classList.remove('hidden');
+        }
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.add('hidden');
+        }
+        function handleOverlayClick(e) {
+            if (e.target === document.getElementById('settingsModal')) closeSettings();
+        }
+
+        // ── Logout ──
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
     </script>
     </div>
 </body>
 </html>
+

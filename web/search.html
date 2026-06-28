@@ -3,109 +3,333 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Search - Repair The Gear</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="js/theme.js" defer></script>
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <style>
-        .loading-view, .found-view {
+        body { overflow: hidden; margin: 0; padding: 0; }
+
+        .mobile-wrapper { position: relative; overflow: hidden; }
+
+        /* Google Map fills entire screen */
+        #searchMap {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Bottom overlay card */
+        .search-overlay {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            z-index: 20;
+            background: var(--surface);
+            border-top-left-radius: 28px;
+            border-top-right-radius: 28px;
+            padding: 32px 24px 28px;
+            box-shadow: 0 -6px 32px rgba(0,0,0,0.5);
             display: flex;
             flex-direction: column;
-            flex: 1;
+            align-items: center;
+            text-align: center;
         }
-        .found-view { display: none; }
-        
-        .loader-ring {
-            border: 4px solid var(--surface);
-            border-top: 4px solid var(--primary);
+
+        /* Pulsing icon ring */
+        .pulse-ring {
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            animation: spin 1s linear infinite;
-            margin-bottom: var(--spacing-l);
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        .profile-card {
-            background: var(--surface);
-            border-radius: var(--border-radius-lg);
-            padding: var(--spacing-l);
-            box-shadow: var(--shadow);
-            margin-bottom: var(--spacing-xl);
-        }
-        .profile-header {
+            border: 4px solid #38bdf8;
+            background: rgba(56, 189, 248, 0.12);
+            animation: pulse-mechanic 1.4s ease-in-out infinite;
+            margin-bottom: 18px;
             display: flex;
             align-items: center;
-            margin-bottom: var(--spacing-m);
-        }
-        .avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 30px;
-            background: var(--primary);
-            display: flex;
             justify-content: center;
-            align-items: center;
-            color: white;
-            font-size: 30px;
-            margin-right: var(--spacing-m);
+            color: #38bdf8;
         }
-        .stats-row {
+
+        .pulse-ring.tow {
+            border-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.12);
+            animation: pulse-tow 1.4s ease-in-out infinite;
+            color: #f59e0b;
+        }
+
+        @keyframes pulse-mechanic {
+            0%   { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.6); }
+            70%  { box-shadow: 0 0 0 22px rgba(56, 189, 248, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+        }
+        @keyframes pulse-tow {
+            0%   { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6); }
+            70%  { box-shadow: 0 0 0 22px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        }
+
+        .location-badge {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 11px 18px;
+            font-size: 13px;
+            color: var(--text-secondary);
             display: flex;
-            justify-content: space-around;
-            padding: var(--spacing-m) 0;
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
-            margin-bottom: var(--spacing-m);
+            align-items: center;
+            gap: 8px;
+            margin: 16px 0 20px;
+            width: 100%;
+            overflow: hidden;
         }
-        .stat-item { text-align: center; }
-        .stat-val { font-size: 18px; font-weight: 600; margin-top: 4px; }
-        .stat-label { font-size: 14px; color: var(--text-secondary); }
-        .fixed-bottom {
-            position: fixed;
-            bottom: var(--spacing-l);
-            left: var(--spacing-m);
-            right: var(--spacing-m);
+        .location-badge span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .cancel-btn {
+            width: 100%;
+            background: transparent;
+            color: #ef4444;
+            border: 1.5px solid #ef4444;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <div class="mobile-wrapper">
-    <div class="container fade-in">
-        <!-- Searching State -->
-        <div id="loadingView" class="loading-view centered">
-            <div class="loader-ring" id="loaderColor"></div>
-            <h2 id="loadingText">Searching...</h2>
-            <button class="btn btn-outline mt-xl" onclick="history.back()">Cancel</button>
+<div class="mobile-wrapper">
+
+    <!-- Google Map fullscreen background -->
+    <div id="searchMap"></div>
+
+    <!-- Bottom sheet overlay -->
+    <div class="search-overlay slide-up">
+
+        <!-- Icon ring: wrench for mechanic, car for tow -->
+        <div class="pulse-ring" id="pulseRing">
+            <!-- Mechanic wrench (default) -->
+            <svg id="iconMechanic" xmlns="http://www.w3.org/2000/svg" width="36" height="36"
+                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+            </svg>
+            <!-- Tow car (hidden by default) -->
+            <svg id="iconTow" xmlns="http://www.w3.org/2000/svg" width="36" height="36"
+                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                <rect x="2" y="10" width="10" height="10" rx="2"/>
+                <path d="M12 14h4l3-4h3v10h-3"/>
+                <circle cx="6" cy="20" r="2"/>
+                <circle cx="16" cy="20" r="2"/>
+                <path d="M12 10V6l4-2"/>
+            </svg>
         </div>
 
-    <script>
-        // Get URL params to determine if mechanic or tow
-        const urlParams = new URLSearchParams(window.location.search);
-        const type = urlParams.get('type') || 'mechanic';
-        
-        const isMechanic = type === 'mechanic';
-        
-        // Setup UI based on type
-        document.getElementById('loadingText').textContent = isMechanic ? 'Searching nearby mechanics...' : 'Locating nearest tow truck...';
-        if (!isMechanic) {
-            document.getElementById('loaderColor').style.borderTopColor = 'var(--warning)';
+        <h2 id="loadingText" style="margin-bottom: 6px;">Searching nearby mechanics...</h2>
+        <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 0;">Sharing your location with providers</p>
+
+        <!-- Location badge -->
+        <div class="location-badge">
+            <ion-icon name="location" style="color: var(--primary); font-size: 18px; flex-shrink: 0;"></ion-icon>
+            <span id="locationLabel">Getting your location...</span>
+        </div>
+
+        <button class="cancel-btn" onclick="history.back()">Cancel</button>
+    </div>
+
+</div>
+
+<script>
+    // Read URL param
+    const urlParams = new URLSearchParams(window.location.search);
+    const type = urlParams.get('type') || 'mechanic';
+    const isMechanic = type === 'mechanic';
+
+    // Switch UI for tow vs mechanic
+    if (!isMechanic) {
+        document.getElementById('loadingText').textContent = 'Locating nearest tow truck...';
+        document.getElementById('pulseRing').classList.add('tow');
+        document.getElementById('iconMechanic').style.display = 'none';
+        document.getElementById('iconTow').style.display = 'block';
+    }
+
+    let userLat = null, userLng = null;
+
+    function initMap() {
+        const map = new google.maps.Map(document.getElementById('searchMap'), {
+            center: { lat: 20.5937, lng: 78.9629 },
+            zoom: 5,
+            disableDefaultUI: true,
+            gestureHandling: 'none',
+            styles: window.__isLightTheme ? window.LIGHT_MAP_STYLES : window.DARK_MAP_STYLES
+        });
+
+        // Common search execution logic
+        function startSearch(lat, lng, addressLabel) {
+            userLat = lat;
+            userLng = lng;
+            const latLng = { lat, lng };
+
+            map.setCenter(latLng);
+            map.setZoom(15);
+
+            // User dot
+            new google.maps.Marker({
+                position: latLng,
+                map,
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 12,
+                    fillColor: isMechanic ? '#38bdf8' : '#f59e0b',
+                    fillOpacity: 1,
+                    strokeColor: '#fff',
+                    strokeWeight: 3
+                },
+                zIndex: 10,
+                title: 'You'
+            });
+
+            // Nearby provider dots (staggered pop-in)
+            const offsets = [
+                { lat: 0.009, lng: 0.013 },
+                { lat: -0.011, lng: 0.008 },
+                { lat: 0.006, lng: -0.015 },
+                { lat: -0.007, lng: -0.011 },
+                { lat: 0.014, lng: -0.005 }
+            ];
+            const dotColor = isMechanic ? '#38bdf8' : '#f59e0b';
+            offsets.forEach((off, i) => {
+                setTimeout(() => {
+                    new google.maps.Marker({
+                        position: { lat: userLat + off.lat, lng: userLng + off.lng },
+                        map,
+                        icon: {
+                            path: google.maps.SymbolPath.CIRCLE,
+                            scale: 9,
+                            fillColor: dotColor,
+                            fillOpacity: 0.85,
+                            strokeColor: '#fff',
+                            strokeWeight: 2
+                        },
+                        title: isMechanic ? 'Nearby Mechanic' : 'Nearby Tow Truck'
+                    });
+                }, 500 + i * 300);
+            });
+
+            document.getElementById('locationLabel').textContent = addressLabel;
+            localStorage.setItem('userLocation', JSON.stringify({ lat, lng, address: addressLabel }));
         }
 
-        // Simulate network delay
+        async function fetchGoogleGeolocation() {
+            try {
+                const response = await fetch(`https://www.googleapis.com/geolocation/v1/geolocate?key=AIzaSyBRi1l63Y8naDP6Vef1sCL_2vDVimCWopA`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                if (!response.ok) throw new Error('API request failed');
+                const data = await response.json();
+                if (data && data.location) {
+                    return { lat: data.location.lat, lng: data.location.lng };
+                }
+            } catch (e) {
+                console.error("Google Geolocation API failed:", e);
+            }
+            return null;
+        }
+
+        async function runGeolocationAndSearch() {
+            if ('geolocation' in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    async (pos) => {
+                        const lat = pos.coords.latitude;
+                        const lng = pos.coords.longitude;
+                        resolveAndSearch(lat, lng);
+                    },
+                    async () => {
+                        // Native failed/denied: try Google API
+                        const googleCoords = await fetchGoogleGeolocation();
+                        if (googleCoords) {
+                            resolveAndSearch(googleCoords.lat, googleCoords.lng);
+                        } else {
+                            // Ultimate fallback
+                            startSearch(12.895690, 77.635640, 'BTM Layout, Bangalore');
+                        }
+                    }
+                );
+            } else {
+                const googleCoords = await fetchGoogleGeolocation();
+                if (googleCoords) {
+                    resolveAndSearch(googleCoords.lat, googleCoords.lng);
+                } else {
+                    startSearch(12.895690, 77.635640, 'BTM Layout, Bangalore');
+                }
+            }
+        }
+
+        async function resolveAndSearch(lat, lng) {
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ location: { lat, lng } }, async (results, status) => {
+                let label = '';
+                if (status === 'OK' && results[0]) {
+                    const parts = results[0].formatted_address.split(',');
+                    label = parts.slice(0, 3).join(', ').trim();
+                } else {
+                    // Nominatim fallback
+                    try {
+                        const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=en`);
+                        const d = await r.json();
+                        const a = d.address || {};
+                        const parts = [];
+                        if (a.house_number || a.building) parts.push(a.house_number || a.building);
+                        if (a.road || a.pedestrian) parts.push(a.road || a.pedestrian);
+                        if (a.suburb || a.neighbourhood || a.village) parts.push(a.suburb || a.neighbourhood || a.village);
+                        if (a.city || a.town || a.county) parts.push(a.city || a.town || a.county);
+                        label = parts.slice(0, 3).join(', ').trim();
+                        if (!label) {
+                            label = d.display_name.split(',').slice(0, 3).join(', ').trim();
+                        }
+                    } catch(e) { label = 'Location found'; }
+                }
+                startSearch(lat, lng, label);
+            });
+        }
+
+        // Try to load saved location from home screen first
+        const savedLoc = JSON.parse(localStorage.getItem('userLocation') || 'null');
+        if (savedLoc && savedLoc.lat && savedLoc.lng && savedLoc.address) {
+            startSearch(savedLoc.lat, savedLoc.lng, savedLoc.address);
+        } else {
+            runGeolocationAndSearch();
+        }
+
+        // After 3.5s → go to tracking
         setTimeout(() => {
-            // Pass data to tracking via localStorage
             localStorage.setItem('trackingData', JSON.stringify({
                 name: isMechanic ? 'Rahul Kumar' : 'City Towing Services',
-                eta: isMechanic ? '8 mins' : '15 mins',
+                eta:  isMechanic ? '8 mins' : '15 mins',
                 dist: isMechanic ? '3.2 km' : '5.4 km',
-                type: type
+                type,
+                userLat: userLat || 12.895690,
+                userLng: userLng || 77.635640
             }));
-
-            // Redirect directly to live tracking
             window.location.href = 'tracking.html';
-        }, 3000);
-    </script>
-    </div>
+        }, 3500);
+    }
+</script>
+
+<!-- Google Maps JS API -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBRi1l63Y8naDP6Vef1sCL_2vDVimCWopA&callback=initMap" async defer></script>
 </body>
 </html>

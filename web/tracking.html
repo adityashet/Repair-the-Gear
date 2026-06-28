@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tracking - Repair The Gear</title>
     <link rel="stylesheet" href="css/style.css">
-    <!-- Leaflet CSS for real maps -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="js/theme.js" defer></script>
+    <!-- Google Maps loaded at bottom -->
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <style>
@@ -41,17 +41,10 @@
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
             background-color: #0B1120;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            color: var(--text-secondary);
         }
-        
-        /* Leaflet custom icons styling override */
-        .leaflet-marker-icon {
-            background: none;
-            border: none;
+        #trackingMap {
+            width: 100%;
+            height: 100%;
         }
 
         .tracking-card {
@@ -136,7 +129,7 @@
 
         <div style="font-size: 14px; margin-bottom: 8px; color: var(--text-secondary);">Service location</div>
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%;">Current Location</div>
+            <div style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%;" id="serviceLocationText">Current Location</div>
             <button class="btn btn-outline" style="padding: 6px 16px; border-radius: 20px; font-size: 14px; background: transparent; border: 1px solid var(--border); color: var(--text);" onclick="openTripDetails()">Trip Details</button>
         </div>
     </div>
@@ -159,7 +152,7 @@
                 <div style="display: flex; align-items: flex-start; gap: 12px;">
                     <div style="width: 12px; height: 12px; border: 3px solid var(--success); border-radius: 50%; margin-top: 4px;"></div>
                     <div>
-                        <div style="font-weight: 600;">Current Location</div>
+                        <div style="font-weight: 600;" id="modalLocationText">Current Location</div>
                         <div style="font-size: 14px; color: var(--text-secondary); margin-top: 2px;">Vehicle breakdown location</div>
                     </div>
                 </div>
@@ -185,23 +178,33 @@
         </div>
     </div>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         function cancelBooking() {
             localStorage.removeItem('trackingData');
             window.location.href = 'home.html';
         }
-        // Load data
-        const dataStr = localStorage.getItem('trackingData');
+
+        function openTripDetails() {
+            document.getElementById('tripDetailsModal').style.display = 'flex';
+        }
+
+        function closeTripDetails() {
+            document.getElementById('tripDetailsModal').style.display = 'none';
+        }
+
+        function completeService() {
+            window.location.href = 'payment.html';
+        }
+
+        // Load saved tracking data
         let isTow = false;
+        const dataStr = localStorage.getItem('trackingData');
         if (dataStr) {
             const data = JSON.parse(dataStr);
             document.getElementById('nameText').textContent = data.name;
             document.getElementById('etaText').textContent = data.eta;
-            document.getElementById('distText').textContent = data.dist + ' away';
-            
-            if(data.type === 'tow') {
+            document.getElementById('distText').textContent = data.dist;
+            if (data.type === 'tow') {
                 isTow = true;
                 document.getElementById('avatarColor').style.backgroundColor = 'var(--warning)';
                 document.getElementById('avatarIcon').name = 'business';
@@ -211,69 +214,114 @@
             }
         }
 
-        function openTripDetails() {
-            document.getElementById('tripDetailsModal').style.display = 'flex';
-        }
-        
-        function closeTripDetails() {
-            document.getElementById('tripDetailsModal').style.display = 'none';
-        }
+        function initMap() {
+            // Use real user location from search page (saved in localStorage), fallback to Bangalore
+            const savedLoc = JSON.parse(localStorage.getItem('userLocation') || 'null');
+            const trackingData = JSON.parse(localStorage.getItem('trackingData') || 'null');
 
-        // Initialize Map
-        const map = L.map('trackingMap', { zoomControl: false });
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
-        }).addTo(map);
+            // Use real location if available, else fallback
+            const userLatLng = savedLoc
+                ? { lat: savedLoc.lat, lng: savedLoc.lng }
+                : { lat: 12.895690, lng: 77.635640 };
 
-        // Simulated coordinates (e.g. user in Bangalore)
-        const userLoc = [12.895690, 77.635640];
-        let providerLoc = [12.915690, 77.615640];
+            // Provider spawns ~2km away from the user
+            let providerLatLng = {
+                lat: userLatLng.lat + 0.018,
+                lng: userLatLng.lng - 0.018
+            };
 
-        map.setView([(userLoc[0] + providerLoc[0])/2, (userLoc[1] + providerLoc[1])/2], 13);
-
-        // Custom Icons
-        const userIcon = L.divIcon({
-            html: '<div style="width:16px;height:16px;background:var(--secondary);border:2px solid white;border-radius:50%;"></div>',
-            iconSize: [20, 20],
-            iconAnchor: [10, 10]
-        });
-
-        const providerIconHtml = isTow ? 
-            '<div style="width:32px;height:32px;background:var(--warning);border:2px solid white;border-radius:50%;display:flex;justify-content:center;align-items:center;color:white;"><ion-icon name="business"></ion-icon></div>' :
-            '<div style="width:32px;height:32px;background:var(--primary);border:2px solid white;border-radius:50%;display:flex;justify-content:center;align-items:center;color:#0B1120;"><ion-icon name="car"></ion-icon></div>';
-
-        const providerIcon = L.divIcon({
-            html: providerIconHtml,
-            iconSize: [36, 36],
-            iconAnchor: [18, 18]
-        });
-
-        L.marker(userLoc, {icon: userIcon}).addTo(map);
-        const providerMarker = L.marker(providerLoc, {icon: providerIcon}).addTo(map);
-
-        const routeLine = L.polyline([providerLoc, userLoc], {color: 'var(--secondary)', weight: 4, dashArray: '5, 5'}).addTo(map);
-
-        // Simulate Movement
-        const moveInterval = setInterval(() => {
-            const latDiff = userLoc[0] - providerLoc[0];
-            const lonDiff = userLoc[1] - providerLoc[1];
-            
-            providerLoc[0] += latDiff * 0.05;
-            providerLoc[1] += lonDiff * 0.05;
-            
-            providerMarker.setLatLng(providerLoc);
-            routeLine.setLatLngs([providerLoc, userLoc]);
-            
-            // Check if arrived (roughly)
-            if (Math.abs(latDiff) < 0.001 && Math.abs(lonDiff) < 0.001) {
-                clearInterval(moveInterval);
+            // Show real address in "Service location" field and modal
+            if (savedLoc && savedLoc.address) {
+                const serviceLocEl = document.getElementById('serviceLocationText');
+                if (serviceLocEl) serviceLocEl.textContent = savedLoc.address;
+                const modalLocEl = document.getElementById('modalLocationText');
+                if (modalLocEl) modalLocEl.textContent = savedLoc.address;
             }
-        }, 1000);
 
-        function completeService() {
-            window.location.href = 'payment.html';
+
+            const map = new google.maps.Map(document.getElementById('trackingMap'), {
+                center: {
+                    lat: (userLatLng.lat + providerLatLng.lat) / 2,
+                    lng: (userLatLng.lng + providerLatLng.lng) / 2
+                },
+                zoom: 13,
+                disableDefaultUI: true,
+                gestureHandling: 'greedy',
+                styles: window.__isLightTheme ? window.LIGHT_MAP_STYLES : window.DARK_MAP_STYLES
+            });
+
+            // Update map tiles when theme changes at day/night boundary
+            window.onThemeChange = function(isLight) {
+                map.setOptions({ styles: isLight ? window.LIGHT_MAP_STYLES : window.DARK_MAP_STYLES });
+            };
+
+
+            // User marker (blue dot)
+            new google.maps.Marker({
+                position: userLatLng,
+                map: map,
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 10,
+                    fillColor: '#38bdf8',
+                    fillOpacity: 1,
+                    strokeColor: '#ffffff',
+                    strokeWeight: 2
+                },
+                title: 'Your Location'
+            });
+
+            // Provider marker (car/tow icon via colored circle)
+            const providerColor = isTow ? '#f59e0b' : '#facc15';
+            const providerMarker = new google.maps.Marker({
+                position: providerLatLng,
+                map: map,
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 14,
+                    fillColor: providerColor,
+                    fillOpacity: 1,
+                    strokeColor: '#ffffff',
+                    strokeWeight: 2
+                },
+                title: 'Provider'
+            });
+
+            // Dashed route polyline
+            const routeLine = new google.maps.Polyline({
+                path: [providerLatLng, userLatLng],
+                geodesic: true,
+                strokeColor: '#38bdf8',
+                strokeOpacity: 0,
+                icons: [{
+                    icon: { path: 'M 0,-1 0,1', strokeOpacity: 1, scale: 4, strokeColor: '#38bdf8' },
+                    offset: '0',
+                    repeat: '14px'
+                }],
+                map: map
+            });
+
+            // Simulate provider moving toward user
+            const moveInterval = setInterval(() => {
+                const latDiff = userLatLng.lat - providerLatLng.lat;
+                const lngDiff = userLatLng.lng - providerLatLng.lng;
+
+                providerLatLng = {
+                    lat: providerLatLng.lat + latDiff * 0.05,
+                    lng: providerLatLng.lng + lngDiff * 0.05
+                };
+
+                providerMarker.setPosition(providerLatLng);
+                routeLine.setPath([providerLatLng, userLatLng]);
+
+                if (Math.abs(latDiff) < 0.001 && Math.abs(lngDiff) < 0.001) {
+                    clearInterval(moveInterval);
+                }
+            }, 1000);
         }
     </script>
+    <!-- Google Maps JavaScript API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBRi1l63Y8naDP6Vef1sCL_2vDVimCWopA&callback=initMap" async defer></script>
     </div>
 </body>
 </html>

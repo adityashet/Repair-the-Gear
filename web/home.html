@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Home - Repair The Gear</title>
     <link rel="stylesheet" href="css/style.css">
-    <!-- Leaflet CSS for real maps -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="js/theme.js" defer></script>
     <!-- Ionicons for icons -->
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
@@ -18,14 +17,12 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: #0B1120; /* Dark theme map placeholder */
+            background-color: #0B1120;
             z-index: 1;
         }
-        .map-placeholder {
+        #map {
             width: 100%;
             height: 100%;
-            object-fit: cover;
-            opacity: 0.5;
         }
         .address-card {
             position: absolute;
@@ -93,18 +90,117 @@
         .icon-mechanic { background: rgba(56, 189, 248, 0.2); color: var(--secondary); }
         .icon-tow { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
         .action-text { font-weight: 600; font-size: 15px; }
+
+        /* Center Pin Overlay styling like Ola/Rapido/Uber */
+        .center-pin-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -100%);
+            pointer-events: none;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .pin-marker {
+            transform-origin: bottom center;
+            transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+        }
+
+        .center-pin-container.dragging .pin-marker {
+            transform: translateY(-16px);
+        }
+
+        .pin-shadow {
+            width: 12px;
+            height: 4px;
+            background: rgba(0, 0, 0, 0.35);
+            border-radius: 50%;
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%) scale(1);
+            transition: transform 0.2s ease, opacity 0.2s ease;
+            opacity: 0.8;
+        }
+
+        .center-pin-container.dragging .pin-shadow {
+            transform: translateX(-50%) scale(0.4);
+            opacity: 0.2;
+        }
+
+        /* Bounce animation for pin drop */
+        @keyframes pinBounce {
+            0% { transform: translateY(-16px); }
+            50% { transform: translateY(3px); }
+            80% { transform: translateY(-2px); }
+            100% { transform: translateY(0); }
+        }
+
+        .center-pin-container.bounce .pin-marker {
+            animation: pinBounce 0.4s ease-out forwards;
+        }
+
+        /* Floating Locate Me Button */
+        .locate-me-btn {
+            position: absolute;
+            bottom: 240px; /* Floating above the bottom-sheet */
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            box-shadow: var(--shadow-lg);
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        .locate-me-btn:hover {
+            background: var(--border);
+            color: var(--primary);
+        }
+        .locate-me-btn ion-icon {
+            font-size: 22px;
+        }
     </style>
 </head>
 <body>
     <div class="mobile-wrapper">
-    <!-- Real Map Container -->
-    <div id="map" class="map-container"></div>
+    <!-- Google Map Container -->
+    <div class="map-container">
+        <div id="map"></div>
+        <!-- Center Pin Overlay -->
+        <div class="center-pin-container" id="centerPinContainer">
+            <div class="pin-marker">
+                <svg width="42" height="42" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C7.58 2 4 5.58 4 10C4 16 12 22 12 22C12 22 20 16 20 10C20 5.58 16.42 2 12 2Z" fill="#FACC15" stroke="#1E293B" stroke-width="1.5"/>
+                    <circle cx="12" cy="10" r="3" fill="#1E293B"/>
+                </svg>
+            </div>
+            <div class="pin-shadow"></div>
+        </div>
+        <!-- Locate Me Floating Button -->
+        <button class="locate-me-btn" onclick="locateMe()" title="Locate Me">
+            <ion-icon name="locate"></ion-icon>
+        </button>
+    </div>
 
     <!-- Top Address Card -->
     <div class="address-card" style="padding: 12px;">
-        <div class="address-header" style="margin-bottom: 8px;">
-            <ion-icon name="location"></ion-icon>
-            Current Location
+        <div class="address-header" style="margin-bottom: 8px; display: flex; justify-content: space-between; width: 100%; align-items: center;">
+            <div style="display: flex; align-items: center;">
+                <ion-icon name="location" style="margin-right: 8px;"></ion-icon>
+                Current Location
+            </div>
         </div>
         <div style="display: flex; align-items: center; background: rgba(255,255,255,0.05); border-radius: 8px; padding: 8px;">
             <input type="text" id="locationInput" placeholder="Locating..." style="flex: 1; border: none; background: transparent; color: var(--text); font-size: 14px; outline: none; width: 100%;">
@@ -116,13 +212,13 @@
     <div class="bottom-sheet slide-up">
         <h2>Need Assistance?</h2>
         <div class="action-row">
-            <a href="search.html?type=mechanic" class="action-btn">
+            <a href="search.html?type=mechanic&v=2" class="action-btn">
                 <div class="icon-circle icon-mechanic">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
                 </div>
                 <span class="action-text">Find Mechanic</span>
             </a>
-            <a href="search.html?type=tow" class="action-btn">
+            <a href="search.html?type=tow&v=2" class="action-btn">
                 <div class="icon-circle icon-tow">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="2" y="10" width="10" height="10" rx="2" />
@@ -153,92 +249,254 @@
         </a>
     </nav>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Initialize Map
-        const map = L.map('map', { zoomControl: false }).setView([20.5937, 78.9629], 5); // Default to India center
-        
-        // Add OpenStreetMap tiles (Free, no API key needed)
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
-        }).addTo(map);
+        const GOOGLE_API_KEY = 'AIzaSyBRi1l63Y8naDP6Vef1sCL_2vDVimCWopA';
+        let map, userMarker;
 
-        let userMarker = null;
-
-        // Geolocation & Reverse Geocoding
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(async (position) => {
-                const lat = position.coords.latitude;
-                const lon = position.coords.longitude;
-
-                // Center map on user
-                map.setView([lat, lon], 15);
-
-                // Add marker
-                userMarker = L.marker([lat, lon]).addTo(map)
-                    .bindPopup("You are here").openPopup();
-
-                // Reverse Geocode using LocationIQ (Replace Your_API_Access_Token)
-                // Note: For this to work in production, you must add your real token here.
-                // If it fails (e.g. invalid token), we fallback to coordinates.
-                const LOCATION_IQ_TOKEN = 'pk.7c354e7f3a446aa4850a775752fb4c4e'; 
-                
-                try {
-                    // Try LocationIQ first
-                    const response = await fetch(`https://us1.locationiq.com/v1/reverse?key=${LOCATION_IQ_TOKEN}&lat=${lat}&lon=${lon}&format=json`);
-                    if(response.ok) {
-                        const data = await response.json();
-                        document.getElementById('locationInput').value = data.display_name.split(',').slice(0,3).join(', ');
-                    } else {
-                        throw new Error("LocationIQ failed (likely invalid token)");
-                    }
-                } catch (error) {
-                    console.log(error.message, "Falling back to free Nominatim API...");
-                    // Free fallback if token is invalid
-                    try {
-                        const fb = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
-                        const fbData = await fb.json();
-                        document.getElementById('locationInput').value = fbData.display_name.split(',').slice(0,3).join(', ');
-                    } catch(e) {
-                        document.getElementById('locationInput').value = `Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`;
-                    }
-                }
-            }, (error) => {
-                document.getElementById('locationInput').value = 'Location Access Denied';
+        function initMap() {
+            // Initialize Google Map centered on India by default
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 20.5937, lng: 78.9629 },
+                zoom: 5,
+                mapTypeId: 'roadmap',
+                disableDefaultUI: true,
+                gestureHandling: 'greedy',
+                styles: window.__isLightTheme ? window.LIGHT_MAP_STYLES : window.DARK_MAP_STYLES
             });
-        } else {
-            document.getElementById('locationInput').value = 'Geolocation not supported';
+
+            // Update map tiles when theme changes (day/night boundary)
+            window.onThemeChange = function(isLight) {
+                map.setOptions({ styles: isLight ? window.LIGHT_MAP_STYLES : window.DARK_MAP_STYLES });
+            };
+
+            const geocoder = new google.maps.Geocoder();
+            window._geocoder = geocoder;
+
+            // Handle map dragging for the center pin animations
+            const pinContainer = document.getElementById('centerPinContainer');
+
+            map.addListener('dragstart', () => {
+                pinContainer.classList.remove('bounce');
+                pinContainer.classList.add('dragging');
+                document.getElementById('locationInput').value = 'Locating...';
+            });
+
+            map.addListener('dragend', () => {
+                pinContainer.classList.remove('dragging');
+                pinContainer.classList.add('bounce');
+            });
+
+            map.addListener('idle', () => {
+                // Ensure we remove the bounce class after animation finishes
+                setTimeout(() => {
+                    pinContainer.classList.remove('bounce');
+                }, 400);
+
+                const center = map.getCenter();
+                const lat = center.lat();
+                const lng = center.lng();
+
+                // Reverse geocode the center of the map
+                reverseGeocode(lat, lng);
+            });
+
+            // Geolocation: set initial map center on user's GPS location
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        centerMapOnCoordinates(lat, lng, true);
+                    },
+                    async () => {
+                        // Fallback to Google Geolocation API
+                        const googleCoords = await fetchGoogleGeolocation();
+                        if (googleCoords) {
+                            centerMapOnCoordinates(googleCoords.lat, googleCoords.lng, false);
+                        } else {
+                            // Fallback to Bangalore BTM Layout center if access denied and Google API fails
+                            centerMapOnCoordinates(12.895690, 77.635640, false);
+                        }
+                    }
+                );
+            } else {
+                // Try Google Geolocation API fallback
+                (async () => {
+                    const googleCoords = await fetchGoogleGeolocation();
+                    if (googleCoords) {
+                        centerMapOnCoordinates(googleCoords.lat, googleCoords.lng, false);
+                    } else {
+                        centerMapOnCoordinates(12.895690, 77.635640, false);
+                    }
+                })();
+            }
+        }
+
+        let geocodeTimeout;
+        function reverseGeocode(lat, lng) {
+            clearTimeout(geocodeTimeout);
+            geocodeTimeout = setTimeout(() => {
+                const latLng = { lat, lng };
+                const geocoder = window._geocoder || new google.maps.Geocoder();
+
+                geocoder.geocode({ location: latLng }, async (results, status) => {
+                    let addressLabel = 'Locating...';
+                    if (status === 'OK' && results[0]) {
+                        const parts = fontFormattedAddress(results[0].formatted_address);
+                        addressLabel = parts;
+                    } else {
+                        // Fallback: free Nominatim reverse geocoding
+                        try {
+                            const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=en`);
+                            const d = await r.json();
+                            if (d && d.address) {
+                                const a = d.address;
+                                const parts = [];
+                                if (a.house_number || a.building) parts.push(a.house_number || a.building);
+                                if (a.road || a.pedestrian) parts.push(a.road || a.pedestrian);
+                                if (a.suburb || a.neighbourhood || a.village) parts.push(a.suburb || a.neighbourhood || a.village);
+                                if (a.city || a.town || a.county) parts.push(a.city || a.town || a.county);
+                                addressLabel = parts.slice(0, 3).join(', ').trim();
+                                if (!addressLabel) {
+                                    addressLabel = d.display_name.split(',').slice(0, 3).join(', ').trim();
+                                }
+                            } else {
+                                addressLabel = d.display_name.split(',').slice(0, 3).join(', ');
+                            }
+                        } catch (e) {
+                            addressLabel = 'Could not fetch location';
+                        }
+                    }
+
+                    document.getElementById('locationInput').value = addressLabel;
+
+                    // Save selected location in localStorage for use in other pages
+                    localStorage.setItem('userLocation', JSON.stringify({
+                        lat: lat,
+                        lng: lng,
+                        address: addressLabel
+                    }));
+                });
+            }, 300);
+        }
+
+        function fontFormattedAddress(addr) {
+            const parts = addr.split(',');
+            return parts.slice(0, 3).join(', ').trim();
+        }
+
+        function centerMapOnCoordinates(lat, lng, isHighAccuracy) {
+            const latLng = { lat, lng };
+            map.setCenter(latLng);
+            map.setZoom(15);
+
+            // User GPS marker (blue dot)
+            if (userMarker) {
+                userMarker.setPosition(latLng);
+            } else {
+                userMarker = new google.maps.Marker({
+                    position: latLng,
+                    map: map,
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 10,
+                        fillColor: '#38bdf8',
+                        fillOpacity: 1,
+                        strokeColor: '#ffffff',
+                        strokeWeight: 2
+                    },
+                    title: isHighAccuracy ? "Your GPS Location" : "Your Approximate Location"
+                });
+            }
+        }
+
+        async function fetchGoogleGeolocation() {
+            try {
+                const response = await fetch(`https://www.googleapis.com/geolocation/v1/geolocate?key=${GOOGLE_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                if (!response.ok) throw new Error('API request failed');
+                const data = await response.json();
+                if (data && data.location) {
+                    return { lat: data.location.lat, lng: data.location.lng };
+                }
+            } catch (e) {
+                console.error("Google Geolocation API failed:", e);
+            }
+            return null;
+        }
+
+        async function locateMe() {
+            document.getElementById('locationInput').value = 'Locating...';
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        centerMapOnCoordinates(lat, lng, true);
+                    },
+                    async () => {
+                        const googleCoords = await fetchGoogleGeolocation();
+                        if (googleCoords) {
+                            centerMapOnCoordinates(googleCoords.lat, googleCoords.lng, false);
+                        } else {
+                            alert("Could not retrieve GPS location. Please check your browser's location permissions.");
+                        }
+                    }
+                );
+            } else {
+                const googleCoords = await fetchGoogleGeolocation();
+                if (googleCoords) {
+                    centerMapOnCoordinates(googleCoords.lat, googleCoords.lng, false);
+                } else {
+                    alert("Geolocation is not supported by your browser.");
+                }
+            }
         }
 
         async function searchLocation() {
             const query = document.getElementById('locationInput').value;
-            if(!query) return;
-            
-            const LOCATION_IQ_TOKEN = 'pk.7c354e7f3a446aa4850a775752fb4c4e'; 
-            try {
-                const response = await fetch(`https://us1.locationiq.com/v1/search?key=${LOCATION_IQ_TOKEN}&q=${encodeURIComponent(query)}&format=json`);
-                if(response.ok) {
-                    const data = await response.json();
-                    if(data && data.length > 0) {
-                        const lat = parseFloat(data[0].lat);
-                        const lon = parseFloat(data[0].lon);
-                        
-                        map.setView([lat, lon], 15);
-                        if(userMarker) {
-                            userMarker.setLatLng([lat, lon]);
-                        } else {
-                            userMarker = L.marker([lat, lon]).addTo(map);
-                        }
-                        userMarker.bindPopup("You are here").openPopup();
-                        document.getElementById('locationInput').value = data[0].display_name.split(',').slice(0,3).join(', ');
+            if (!query) return;
+
+            // Try Google Geocoder first
+            if (window._geocoder) {
+                window._geocoder.geocode({ address: query }, async (results, status) => {
+                    if (status === 'OK' && results.length > 0) {
+                        const loc = results[0].geometry.location;
+                        map.setCenter(loc);
+                        map.setZoom(15);
+                    } else {
+                        // Fallback: Nominatim search
+                        await nominatimSearch(query);
                     }
+                });
+            } else {
+                await nominatimSearch(query);
+            }
+        }
+
+        async function nominatimSearch(query) {
+            try {
+                const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&accept-language=en`);
+                const data = await r.json();
+                if (data && data.length > 0) {
+                    const lat = parseFloat(data[0].lat);
+                    const lng = parseFloat(data[0].lon);
+                    map.setCenter({ lat, lng });
+                    map.setZoom(15);
+                } else {
+                    alert('Location not found. Please try a different search.');
                 }
             } catch(e) {
-                console.error("Search failed", e);
+                console.error('Search failed', e);
             }
         }
     </script>
+
+    <!-- Google Maps JavaScript API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBRi1l63Y8naDP6Vef1sCL_2vDVimCWopA&callback=initMap" async defer></script>
     </div>
 </body>
 </html>

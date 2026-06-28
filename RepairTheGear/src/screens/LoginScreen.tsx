@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../constants/theme';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import { theme, darkColors } from '../constants/theme';
+import type { RootStackParamList } from '../navigation/AppNavigator';
+import { useTheme, useThemeStyles } from '../context/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -12,6 +13,9 @@ export default function LoginScreen({ navigation }: Props) {
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  const { colors } = useTheme();
+  const styles = useThemeStyles(createStyles);
 
   const handleLogin = () => {
     if (phone.length > 9 && password.length > 0) {
@@ -36,7 +40,7 @@ export default function LoginScreen({ navigation }: Props) {
             placeholder="Enter your full name"
             value={name}
             onChangeText={setName}
-            placeholderTextColor={theme.colors.textSecondary}
+            placeholderTextColor={colors.textSecondary}
           />
         </View>
 
@@ -48,7 +52,7 @@ export default function LoginScreen({ navigation }: Props) {
             keyboardType="phone-pad"
             value={phone}
             onChangeText={setPhone}
-            placeholderTextColor={theme.colors.textSecondary}
+            placeholderTextColor={colors.textSecondary}
           />
         </View>
 
@@ -61,10 +65,10 @@ export default function LoginScreen({ navigation }: Props) {
               secureTextEntry={!showPassword}
               value={password}
               onChangeText={setPassword}
-              placeholderTextColor={theme.colors.textSecondary}
+              placeholderTextColor={colors.textSecondary}
             />
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
-              <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={24} color={theme.colors.textSecondary} />
+              <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={24} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
         </View>
@@ -77,10 +81,10 @@ export default function LoginScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: typeof darkColors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: colors.background,
   },
   content: {
     flex: 1,
@@ -89,12 +93,13 @@ const styles = StyleSheet.create({
   },
   title: {
     ...theme.typography.title,
-    color: theme.colors.textSecondary,
+    color: colors.textSecondary,
     marginBottom: theme.spacing.xs,
   },
   logo: {
     ...theme.typography.title,
     fontSize: 36,
+    color: colors.text,
     marginBottom: theme.spacing.xxl,
   },
   inputContainer: {
@@ -102,20 +107,21 @@ const styles = StyleSheet.create({
   },
   label: {
     ...theme.typography.bodySecondary,
+    color: colors.text,
     marginBottom: theme.spacing.s,
     fontWeight: '600',
   },
   input: {
-    backgroundColor: theme.colors.surface,
+    backgroundColor: colors.surface,
     padding: theme.spacing.m,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: colors.border,
     fontSize: 16,
-    color: theme.colors.text,
+    color: colors.text,
   },
   button: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: colors.primary,
     padding: theme.spacing.m,
     borderRadius: 8,
     alignItems: 'center',
@@ -123,20 +129,21 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     ...theme.typography.button,
+    color: colors.background,
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: colors.border,
   },
   passwordInput: {
     flex: 1,
     padding: theme.spacing.m,
     fontSize: 16,
-    color: theme.colors.text,
+    color: colors.text,
   },
   eyeIcon: {
     padding: theme.spacing.m,

@@ -1,136 +1,288 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform, Dimensions } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { CompositeScreenProps } from '@react-navigation/native';
+import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import { RootStackParamList } from '../navigation/AppNavigator';
-import { theme } from '../constants/theme';
+import type { RootStackParamList, MainTabParamList } from '../navigation/AppNavigator';
+import { theme, darkColors, lightMapStyles, darkMapStyles } from '../constants/theme';
+import { useTheme, useThemeStyles } from '../context/ThemeContext';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
-
-const { width, height } = Dimensions.get('window');
+type Props = CompositeScreenProps<
+  BottomTabScreenProps<MainTabParamList, 'HomeTab'>,
+  NativeStackScreenProps<RootStackParamList>
+>;
 
 export default function HomeScreen({ navigation }: Props) {
+  const { colors, isLightTheme } = useTheme();
+  const styles = useThemeStyles(createStyles);
+  
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [address, setAddress] = useState<string>('Locating...');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+
+  const mapRef = useRef<MapView | null>(null);
+
+  const centerMapOnCoordinates = (lat: number, lng: number) => {
+    if (mapRef.current) {
+      mapRef.current.animateToRegion({
+        latitude: lat,
+        longitude: lng,
+        latitudeDelta: 0.005,
+        longitudeDelta: 0.005,
+      }, 1000);
+    }
+  };
 
   useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         setErrorMsg('Permission to access location was denied');
+        setAddress('Permission Denied');
         return;
       }
 
-      let currentLocation = await Location.getCurrentPositionAsync({});
-      setLocation(currentLocation);
-
-      // Reverse geocode
       try {
-        const reverseGeocode = await Location.reverseGeocodeAsync({
+        let currentLocation = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+        setLocation(currentLocation);
+        setSelectedLocation({
           latitude: currentLocation.coords.latitude,
           longitude: currentLocation.coords.longitude,
         });
-        if (reverseGeocode.length > 0) {
-          const place = reverseGeocode[0];
-          setAddress(`${place.street || place.name}, ${place.city || place.subregion}`);
-        } else {
-          setAddress('Unknown Location');
-        }
+        centerMapOnCoordinates(currentLocation.coords.latitude, currentLocation.coords.longitude);
       } catch (e) {
-        setAddress('Could not fetch address');
+        // Fallback default coordinates (BTM Layout, Bangalore)
+        const fallbackLat = 12.895690;
+        const fallbackLng = 77.635640;
+        setSelectedLocation({ latitude: fallbackLat, longitude: fallbackLng });
+        centerMapOnCoordinates(fallbackLat, fallbackLng);
       }
     })();
   }, []);
 
+  const handleRegionChange = () => {
+    setIsDragging(true);
+    setAddress('Locating...');
+  };
+
+  const handleRegionChangeComplete = async (region: any) => {
+    setIsDragging(false);
+    const centerCoords = {
+      latitude: region.latitude,
+      longitude: region.longitude,
+    };
+    setSelectedLocation(centerCoords);
+
+    // Reverse geocode the center coordinates
+    try {
+      const reverseGeocode = await Location.reverseGeocodeAsync(centerCoords);
+      if (reverseGeocode.length > 0) {
+        const place = reverseGeocode[0];
+        const parts = [];
+        if (place.street || place.name) parts.push(place.street || place.name);
+        if (place.district || place.subregion) parts.push(place.district || place.subregion);
+        if (place.city) parts.push(place.city);
+        
+        setAddress(parts.slice(0, 3).join(', ') || 'Unknown Location');
+      } else {
+        setAddress('Unknown Location');
+      }
+    } catch (e) {
+      setAddress('Could not fetch address');
+    }
+  };
+
+  const locateMe = async () => {
+    try {
+      setAddress('Locating...');
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setAddress('Permission denied');
+        return;
+      }
+
+      let currentLocation = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+      setLocation(currentLocation);
+      setSelectedLocation({
+        latitude: currentLocation.coords.latitude,
+        longitude: currentLocation.coords.longitude,
+      });
+      centerMapOnCoordinates(currentLocation.coords.latitude, currentLocation.coords.longitude);
+    } catch (e) {
+      setAddress('Could not fetch location');
+    }
+  };
+
   const handleFindMechanic = () => {
-    navigation.navigate('SearchMechanic');
+    if (selectedLocation) {
+      navigation.navigate('SearchMechanic', {
+        userLocation: {
+          ...selectedLocation,
+          address: address,
+        },
+      });
+    } else {
+      navigation.navigate('SearchMechanic');
+    }
   };
 
   const handleTowVehicle = () => {
-    navigation.navigate('TowService');
+    if (selectedLocation) {
+      navigation.navigate('TowService', {
+        userLocation: {
+          ...selectedLocation,
+          address: address,
+        },
+      });
+    } else {
+      navigation.navigate('TowService');
+    }
   };
 
-  const initialRegion = location ? {
-    latitude: location.coords.latitude,
-    longitude: location.coords.longitude,
+  const initialRegion = {
+    latitude: 12.895690,
+    longitude: 77.635640,
     latitudeDelta: 0.01,
     longitudeDelta: 0.01,
-  } : {
-    // Default fallback to a central location (e.g., center of a city)
-    latitude: 37.78825,
-    longitude: -122.4324,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421,
   };
 
   return (
     <View style={styles.container}>
-      <MapView 
-        style={styles.map} 
-        provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
-        region={initialRegion}
-        showsUserLocation={true}
-      >
-        {location && (
-          <Marker 
-            coordinate={{ 
-              latitude: location.coords.latitude, 
-              longitude: location.coords.longitude 
-            }} 
-            title="You are here" 
-          />
-        )}
-      </MapView>
+      {/* Map Container with Overlays */}
+      <View style={styles.mapContainer}>
+        <MapView 
+          ref={mapRef}
+          style={styles.map} 
+          provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
+          initialRegion={initialRegion}
+          showsUserLocation={true}
+          showsMyLocationButton={false}
+          onRegionChange={handleRegionChange}
+          onRegionChangeComplete={handleRegionChangeComplete}
+          customMapStyle={isLightTheme ? lightMapStyles : darkMapStyles}
+        />
 
-      <View style={styles.addressCard}>
-        <View style={styles.addressHeader}>
-          <Ionicons name="location" size={24} color={theme.colors.primary} />
-          <Text style={styles.addressTitle}>Current Location</Text>
+        {/* Floating Locate Me Button */}
+        <TouchableOpacity style={styles.locateMeButton} onPress={locateMe}>
+          <Ionicons name="locate" size={24} color={colors.text} />
+        </TouchableOpacity>
+
+        {/* Central Pin Overlay */}
+        <View style={styles.centerPinContainer} pointerEvents="none">
+          <View style={[
+            styles.pinMarker,
+            isDragging && { transform: [{ translateY: -15 }] }
+          ]}>
+            <Ionicons name="location" size={42} color={colors.primary} />
+            <View style={[
+              styles.pinShadow,
+              isDragging && { transform: [{ scale: 0.4 }], opacity: 0.2 }
+            ]} />
+          </View>
         </View>
-        <Text style={styles.addressText} numberOfLines={1}>{address}</Text>
-      </View>
 
-      <View style={styles.bottomCard}>
-        <Text style={styles.greeting}>Need Assistance?</Text>
-        <View style={styles.actionRow}>
-          <TouchableOpacity style={styles.actionButton} onPress={handleFindMechanic}>
-            <View style={[styles.iconContainer, { backgroundColor: '#E3F2FD' }]}>
-              <Ionicons name="build" size={32} color="#1976D2" />
+        {/* Top Address Card */}
+        <View style={styles.addressCard}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+            <View style={styles.addressHeader}>
+              <Ionicons name="location" size={24} color={colors.primary} />
+              <Text style={styles.addressTitle}>Current Location</Text>
             </View>
-            <Text style={styles.actionText}>Find Mechanic</Text>
-          </TouchableOpacity>
+          </View>
+          <Text style={styles.addressText} numberOfLines={1}>{address}</Text>
+        </View>
 
-          <TouchableOpacity style={styles.actionButton} onPress={handleTowVehicle}>
-            <View style={[styles.iconContainer, { backgroundColor: '#FFF3E0' }]}>
-              <Ionicons name="car" size={32} color="#F57C00" />
-            </View>
-            <Text style={styles.actionText}>Tow Vehicle</Text>
-          </TouchableOpacity>
+        {/* Bottom Actions Card */}
+        <View style={styles.bottomCard}>
+          <Text style={styles.greeting}>Need Assistance?</Text>
+          <View style={styles.actionRow}>
+            <TouchableOpacity style={styles.actionButton} onPress={handleFindMechanic}>
+              <View style={[styles.iconContainer, { backgroundColor: isLightTheme ? '#E3F2FD' : '#1E293B' }]}>
+                <Ionicons name="build" size={32} color={isLightTheme ? '#1976D2' : '#38BDF8'} />
+              </View>
+              <Text style={styles.actionText}>Find Mechanic</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.actionButton} onPress={handleTowVehicle}>
+              <View style={[styles.iconContainer, { backgroundColor: isLightTheme ? '#FFF3E0' : '#1E293B' }]}>
+                <Ionicons name="car" size={32} color={isLightTheme ? '#F57C00' : '#F59E0B'} />
+              </View>
+              <Text style={styles.actionText}>Tow Vehicle</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: typeof darkColors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: colors.background,
+  },
+  mapContainer: {
+    flex: 1,
+    ...StyleSheet.absoluteFillObject,
   },
   map: {
-    width: width,
-    height: height,
     ...StyleSheet.absoluteFillObject,
+  },
+  centerPinContainer: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginLeft: -21, // Center exactly
+    marginTop: -42,  // Center pin bottom tip on coordinates
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+  },
+  pinMarker: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pinShadow: {
+    width: 12,
+    height: 3,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    borderRadius: 2,
+    marginTop: -2,
+  },
+  locateMeButton: {
+    position: 'absolute',
+    bottom: 220, // Float just above the bottom sheet
+    right: theme.spacing.m,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 6,
+    zIndex: 10,
   },
   addressCard: {
     position: 'absolute',
     top: Platform.OS === 'ios' ? 60 : 40,
     left: theme.spacing.m,
     right: theme.spacing.m,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: colors.surface,
     padding: theme.spacing.m,
     borderRadius: 12,
     shadowColor: '#000',
@@ -138,27 +290,30 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 5,
+    zIndex: 15,
   },
   addressHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: theme.spacing.xs,
   },
   addressTitle: {
     ...theme.typography.bodySecondary,
+    color: colors.textSecondary,
     marginLeft: theme.spacing.xs,
     fontWeight: '600',
   },
   addressText: {
     ...theme.typography.body,
+    color: colors.text,
     fontWeight: '500',
+    marginTop: 6,
   },
   bottomCard: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: colors.surface,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: theme.spacing.l,
@@ -167,9 +322,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 10,
+    zIndex: 15,
   },
   greeting: {
     ...theme.typography.header,
+    color: colors.text,
     marginBottom: theme.spacing.l,
   },
   actionRow: {
@@ -191,6 +348,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     ...theme.typography.body,
+    color: colors.text,
     fontWeight: '600',
   },
 });

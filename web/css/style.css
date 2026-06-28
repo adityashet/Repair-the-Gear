@@ -25,6 +25,22 @@
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
+/* ============================
+   LIGHT THEME (Morning: 6am–6pm IST)
+   Applied via body.light-theme
+   ============================ */
+body.light-theme {
+  --background: #F1F5F9;
+  --surface: #FFFFFF;
+  --text: #0F172A;
+  --text-secondary: #64748B;
+  --border: #E2E8F0;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  /* primary, secondary, error, success, warning stay the same */
+}
+
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -41,6 +57,8 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  /* Smooth transition when switching themes */
+  transition: background-color 0.6s ease, color 0.6s ease;
 }
 
 /* Hide scrollbars universally but keep functionality */
