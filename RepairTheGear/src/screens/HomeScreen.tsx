@@ -176,17 +176,13 @@ export default function HomeScreen({ navigation }: Props) {
           <Ionicons name="locate" size={24} color={colors.text} />
         </TouchableOpacity>
 
-        {/* Central Pin Overlay */}
+        {/* Central blue dot marker */}
         <View style={styles.centerPinContainer} pointerEvents="none">
-          <View style={[
-            styles.pinMarker,
-            isDragging && { transform: [{ translateY: -15 }] }
-          ]}>
-            <Ionicons name="location" size={42} color={colors.primary} />
-            <View style={[
-              styles.pinShadow,
-              isDragging && { transform: [{ scale: 0.4 }], opacity: 0.2 }
-            ]} />
+          <View style={styles.blueDotContainer}>
+            <View style={styles.blueDotPulse} />
+            <View style={styles.blueDotOuter}>
+              <View style={styles.blueDotInner} />
+            </View>
           </View>
         </View>
 
@@ -241,22 +237,43 @@ const createStyles = (colors: typeof darkColors) => StyleSheet.create({
     position: 'absolute',
     top: '50%',
     left: '50%',
-    marginLeft: -21, // Center exactly
-    marginTop: -42,  // Center pin bottom tip on coordinates
+    marginLeft: -20, // Center exactly (half of 40px width)
+    marginTop: -20,  // Center exactly (half of 40px height)
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,
   },
-  pinMarker: {
-    alignItems: 'center',
+  blueDotContainer: {
     justifyContent: 'center',
+    alignItems: 'center',
+    width: 40,
+    height: 40,
   },
-  pinShadow: {
+  blueDotPulse: {
+    position: 'absolute',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(56, 189, 248, 0.25)', // Soft blue pulse halo matching second pic
+  },
+  blueDotOuter: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#ffffff', // White border
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.25,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  blueDotInner: {
     width: 12,
-    height: 3,
-    backgroundColor: 'rgba(0,0,0,0.35)',
-    borderRadius: 2,
-    marginTop: -2,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#2563EB', // Blue dot core
   },
   locateMeButton: {
     position: 'absolute',
