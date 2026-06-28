@@ -176,13 +176,20 @@ export default function HomeScreen({ navigation }: Props) {
           <Ionicons name="locate" size={24} color={colors.text} />
         </TouchableOpacity>
 
-        {/* Central blue dot marker */}
+        {/* Central green pin marker */}
         <View style={styles.centerPinContainer} pointerEvents="none">
-          <View style={styles.blueDotContainer}>
-            <View style={styles.blueDotPulse} />
-            <View style={styles.blueDotOuter}>
-              <View style={styles.blueDotInner} />
+          <View style={[
+            styles.pinMarker,
+            isDragging && { transform: [{ translateY: -15 }] }
+          ]}>
+            <View style={styles.greenPinHead}>
+              <View style={styles.greenPinCenter} />
             </View>
+            <View style={styles.greenPinTip} />
+            <View style={[
+              styles.pinShadow,
+              isDragging && { transform: [{ scale: 0.4 }], opacity: 0.2 }
+            ]} />
           </View>
         </View>
 
@@ -237,43 +244,51 @@ const createStyles = (colors: typeof darkColors) => StyleSheet.create({
     position: 'absolute',
     top: '50%',
     left: '50%',
-    marginLeft: -20, // Center exactly (half of 40px width)
-    marginTop: -20,  // Center exactly (half of 40px height)
+    marginLeft: -18, // Center exactly (half of 36px width)
+    marginTop: -44,  // Center pin bottom tip on coordinates (36 height + 10 tip - 2 overlap)
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,
   },
-  blueDotContainer: {
+  pinMarker: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  greenPinHead: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#10B981', // Green color
+    borderWidth: 1.5,
+    borderColor: '#1E293B', // Dark outline matching web SVG
     justifyContent: 'center',
     alignItems: 'center',
-    width: 40,
-    height: 40,
+    zIndex: 2,
   },
-  blueDotPulse: {
-    position: 'absolute',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(56, 189, 248, 0.25)', // Soft blue pulse halo matching second pic
+  greenPinCenter: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#FFFFFF', // White center dot
   },
-  blueDotOuter: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: '#ffffff', // White border
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.25,
-    shadowRadius: 2,
-    elevation: 3,
+  greenPinTip: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 6,
+    borderLeftColor: 'transparent',
+    borderRightWidth: 6,
+    borderRightColor: 'transparent',
+    borderTopWidth: 10,
+    borderTopColor: '#10B981', // Green pointer tip matching head
+    marginTop: -2, // Slight overlap to weld them together
+    zIndex: 1,
   },
-  blueDotInner: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#2563EB', // Blue dot core
+  pinShadow: {
+    width: 14,
+    height: 4,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    borderRadius: 2,
+    marginTop: 2,
   },
   locateMeButton: {
     position: 'absolute',
